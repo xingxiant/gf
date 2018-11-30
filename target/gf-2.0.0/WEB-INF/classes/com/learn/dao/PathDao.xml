@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.PathDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.learn.entity.PathEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="companyKey" column="companykey"/>
+        <result property="appId" column="app_id"/>
+        <result property="appName" column="app_name"/>
+        <result property="callBackPath" column="callback_path"/>
+        <result property="callBackApp" column="callback_app"/>
+        <result property="createTime" column="time"/>
+        <result property="pathDataId" column="path_data_id"/>
+        <result property="appHost" column="app_host"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.PathEntity">
+		select * from path where id = #{value}
+	</select>
+
+    <select id="queryAll" resultType="com.learn.entity.PathEntity">
+        select * from path where 1=1
+    </select>
+
+    <select id="queryList" resultType="com.learn.entity.PathEntity">
+        select * from path where 1=1
+        <if test="appId != null and appId != ''">
+            and app_id = '%${appId}%'
+        </if>
+
+        <if test="companyKey != null and companyKey != ''">
+            and companykey = '%${companyKey}%'
+        </if>
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from path where 1=1
+        <if test="content != null and content != ''">
+            and name like '%${name}%'
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.PathEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into path
+		(
+			`name`,
+			`companykey`,`app_id`,`app_name`,`callback_path`,`callback_app`,`time`,`app_host`
+		)
+		values
+		(
+			#{name},
+			#{companyKey},#{appId},#{appName},#{callBackPath},#{callBackApp},#{createTime},#{appHost}
+		)
+	</insert>
+    <select id="queryByAIdAndCpKey" resultType="com.learn.entity.PathEntity">
+        select * from path
+        <where>
+            <if test="appId != null and appId != ''">and app_id = #{appId}</if>
+            <if test="companyKey != null and companyKey != ''">and companykey = #{companyKey}</if>
+        </where>
+    </select>
+
+    <update id="update" parameterType="com.learn.entity.PathEntity">
+        update path
+        <set>
+            <if test="name != null">`name` = #{name},</if>
+            <if test="companyKey != null">`companykey` = #{companyKey},</if>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="appName != null">`app_name` = #{appName},</if>
+            <if test="callBackPath != null">`callback_path` = #{callBackPath},</if>
+            <if test="callBackApp != null">`callback_app` = #{callBackApp},</if>
+            <if test="createTime != null">`time` = #{createTime},</if>
+            <if test="appHost != null">`app_host` = #{appHost}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <delete id="delete">
+		delete from path where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from path where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

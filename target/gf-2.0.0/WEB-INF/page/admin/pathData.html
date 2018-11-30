@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>文本信息</title>
+    <link href="${rc.contextPath}/statics/hhhh/bootstrap.min.css" rel="stylesheet">
+    <link href="${rc.contextPath}/statics/hhhh/bootstrap-select.min.css" rel="stylesheet">
+    <link href="${rc.contextPath}/statics/hhhh/style.css" rel="stylesheet">
+    <link href="${rc.contextPath}/statics/hhhh/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
+    <script src="${rc.contextPath}/statics/hhhh/jquery.min.js"></script>
+    <script src="${rc.contextPath}/statics/hhhh/bootstrap.min.js"></script>
+    <script src="${rc.contextPath}/statics/hhhh/bootstrap-select.min.js"></script>
+    <script src="${rc.contextPath}/statics/hhhh/defaults-zh_CN.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/statics/hhhh/bootstrap-datetimepicker.min.js" charset="UTF-8"></script>
+    <script type="text/javascript" src="${rc.contextPath}/statics/hhhh/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8"></script>
+    <script src="${rc.contextPath}/js/admin/pathData.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div class="page-filters">
+                <div class="col-md-3 filter">
+                    <label for="dtp_input2" class="control-label">开始时间</label>
+                    <div class="input-group date form_date " data-date="" data-date-format="yyyy-mm-dd" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+                        <input class="form-control" size="6" type="text" value="" id="startDate" readonly>
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                    </div>
+                    <input type="hidden" id="dtp_input2" value="" /><br/>
+                </div>
+                <div class="col-md-3 filter">
+                    <label for="dtp_input2" class="control-label">结束时间</label>
+                    <div class="input-group date form_date " data-date="" data-date-format="yyyy-mm-dd" data-link-field="dtp_input2" data-link-format="yyyy-mm-dd">
+                        <input class="form-control" size="6" type="text" value="" id="endDate" readonly>
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                    </div>
+                    <input type="hidden" id="dtp_input1" value="" /><br/>
+                </div>
+
+
+
+                <div class="col-md-2 filters-selecter filter">
+                    <span class="label label-primary ">广告：</span>
+                    <select class="selectpicker" id="slpkApp">
+                    </select>
+                </div>
+                <div class="col-md-2 filters-selecter filter">
+                    <span class="label label-success ">渠道：</span>
+                    <select class="selectpicker" id="slpkPath">
+                    </select>
+                </div>
+
+                <div class="col-md-2 filters-btns filter">
+                    <button type="button" id="query" class="btn btn-default">查询</button>
+                    <button type="button" id="clear" class="btn btn-default">清空</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <table class="table table-bordered table-striped" id="pathData">
+
+        <tr><th>开始时间</th><th>结束时间</th><th>渠道</th><th>广告</th><th>访问量(次)</th><th>回调总量(次)</th><th>排重回调量(次)</th><th>真实回调量(次)</th><th>排重真实回调量(次)</th><th>激活</th></tr>
+    </table>
+</div>
+
+
+<script type="text/javascript">
+
+    $('.form_date').datetimepicker({
+        language:  'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        minView: 2,
+        forceParse: 0
+    });
+
+</script>
+</body>
+</html>

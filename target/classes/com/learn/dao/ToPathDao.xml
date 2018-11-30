@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.ToPathDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.learn.entity.ToPathEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="companyKey" column="companykey"/>
+        <result property="appId" column="app_id"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.ToPathEntity">
+		select * from to_path where id = #{value}
+	</select>
+
+    <select id="queryList" resultType="com.learn.entity.ToPathEntity">
+        select * from to_path where 1=1
+        <if test="content != null and content != ''">
+            and content like '%${content}%'
+        </if>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from to_path
+        <where>
+            <if test="startDate != null and startDate != ''">AND time <![CDATA[>=]]> #{startDate}</if>
+            <if test="endDate != null and endDate != ''">AND time <![CDATA[<=]]>#{endDate}</if>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.ToPathEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into to_path
+		(
+			`companykey`,
+			`app_id`,`time`
+		)
+		values
+		(
+			#{companyKey},
+			#{appId},#{time}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.learn.entity.ToPathEntity">
+        update to_path
+        <set>
+            <if test="companyKey != null">`companykey` = #{companyKey},</if>
+            <if test="appId != null">`appp_id` = #{appId},</if>
+            <if test="time != null">`time` = #{time}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+		delete from to_path where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from to_path where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

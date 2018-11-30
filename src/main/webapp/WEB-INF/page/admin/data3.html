@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文本信息</title>
+    #parse("sys/header.html")
+    <link rel="stylesheet" href="/statics/nlp.css">
+</head>
+<body>
+<div id="rrapp" v-cloak>
+
+    <div  class="panel panel-success">
+        <div class="panel-heading">综合分析结果</div>
+        <form class="form-horizontal" v-if="r">
+            <div class="com-ani">
+                <div class="com-ani-in-le"><span>正向情感</span>
+                    <div class="import-left">
+                        <div class="import-left-in list-up-in-add"></div>
+                    </div>
+                </div>
+                <div class="com-ani-in-ri">
+                    <div>负向情感</div>
+                    <div class="com-ri-img">
+                        <div class="com-ri-img-in"></div>
+                    </div>
+                </div>
+                <div class="com-ani-in-bar">
+                    <div class="ed-line">
+                        <div class="ed-line-left" :style="{width: parseInt(r.positive_prob * 100)+'%'}"></div>
+                        <div class="ed-line-right"></div>
+                    </div>
+                </div>
+                <div class="com-ani-in">
+                    <div class="ed-com-father">
+                        <div class="ed-quote" :style="{width: parseInt(r.positive_prob * 100)+'%'}">
+                            {{ parseInt(r.positive_prob * 100)}}%
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="ed-com-father-more">
+                        <div class="ed-quote-more ed-quote-more-happy" v-if="r.sentiment == 2">
+                            情感正向
+                        </div>
+                        <div class="ed-quote-more ed-quote-more-usual" v-if="r.sentiment == 1">
+                            情感偏中性
+                        </div>
+                        <div class="ed-quote-more ed-quote-more-sad" v-if="r.sentiment == 0">
+                            情感偏负面
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="${rc.contextPath}/js/admin/data3.js?_${date.systemTime}"></script>
+</body>
+</html>

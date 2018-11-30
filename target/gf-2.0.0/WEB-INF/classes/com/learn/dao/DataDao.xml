@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.DataDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.learn.entity.DataEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="gmttime" column="gmtTime"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.DataEntity">
+		select * from data where id = #{value}
+	</select>
+
+    <select id="tj" resultType="double">
+		select avg(fs) from data
+    </select>
+    <select id="queryList" resultType="com.learn.entity.DataEntity">
+        select * from data where 1=1
+        <if test="content != null and content != ''">
+            and content like '%${content}%'
+        </if>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from data where 1=1
+        <if test="content != null and content != ''">
+            and content like '%${content}%'
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.DataEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into data
+		(
+			`content`, 
+			`gmtTime`,`fs`
+		)
+		values
+		(
+			#{content}, 
+			#{gmttime},#{fs}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.learn.entity.DataEntity">
+        update data
+        <set>
+            <if test="content != null">`content` = #{content},</if>
+            <if test="gmttime != null">`gmtTime` = #{gmttime}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+		delete from data where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from data where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

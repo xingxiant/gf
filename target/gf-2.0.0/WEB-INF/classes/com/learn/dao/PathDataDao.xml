@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.PathDataDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.learn.entity.PathDataEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="path" column="path"/>
+        <result property="app" column="app"/>
+        <result property="fromPathCount" column="from_path_count"/>
+        <result property="fromAppCount" column="from_app_count"/>
+        <result property="fromAppTrueCount" column="from_app_true_count"/>
+        <result property="toPathCount" column="to_path_count"/>
+        <result property="toPathTrueCount" column="to_path_true_count"/>
+        <result property="daytime" column="daytime"/>
+        <result property="appId" column="app_id"/>
+        <result property="companyKey" column="compankey"/>
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.PathDataEntity">
+		select * from path_data where id = #{value}
+	</select>
+
+    <select id="tj" resultType="double">
+		select avg(fs) from path_data
+    </select>
+    <select id="queryList" resultType="com.learn.entity.PathDataEntity">
+        select * from path_data where 1=1
+
+        <if test="app != null and app != ''">
+            and app like '%${app}%'
+        </if>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="queryWithDate1" resultType="com.learn.entity.PathDataEntity">
+        select id,app,path,app_id,companykey,daytime from path_data where app_id =#{appId} and companykey=#{companyKey} and daytime=(select max(daytime) from path_data where app_id =#{appId} and companykey=#{companyKey})
+    </select>
+
+    <select id="queryWithDate" resultType="com.learn.entity.PathDataEntity">
+        select id,app,path,app_id,companykey,daytime from path_data where app_id =#{appId} and companykey=#{companyKey} and daytime=#{endDate}
+    </select>
+
+    <select id="queryToPath" resultType="int">
+        select  sum(d.to_path_count) from path_data d where app_id =#{appId} and companykey = #{companyKey} and daytime >= #{startDate} and #{endDate} >= daytime
+
+    </select>
+
+    <select id="queryFromApp" resultType="int">
+        select  sum(b.from_app_count) from path_data b where app_id =#{appId} and companykey = #{companyKey} and daytime >= #{startDate} and #{endDate} >= daytime
+
+    </select>
+
+    <select id="queryFromPath" resultType="int">
+        select  sum(a.from_path_count) from path_data a where app_id =#{appId} and companykey = #{companyKey} and daytime >= #{startDate} and #{endDate} >= daytime
+
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from path_data where 1=1
+        <if test="path != null and path != ''">
+            and path like '%${path}%'
+        </if>
+
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.PathDataEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into path_data
+		(
+			`path`,
+			`app`,`from_path_count`,`from_app_count`,`from_app_true_count`,`to_path_count`,`to_path_true_count`,`daytime`,`app_id`,`companykey`
+		)
+		values
+		(
+			#{path},
+			#{app},#{fromPathCount},#{fromAppCount},#{fromAppTrueCount},#{toPathCount},#{toPathTrueCount},#{daytime},#{appId},#{companyKey}
+		)
+	</insert>
+
+    <insert id="saveReturn" parameterType="com.learn.entity.PathDataEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into path_data
+		(
+			`path`,
+			`app`,`from_path_count`,`from_app_count`,`from_app_true_count`,`to_path_count`,`to_path_true_count`,`daytime`,`app_id`,`companykey`
+		)
+		values
+		(
+			#{path},
+			#{app},#{fromPathCount},#{fromAppCount},#{fromAppTrueCount},#{toPathCount},#{toPathTrueCount},#{daytime},#{appId},#{companyKey}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.learn.entity.PathDataEntity">
+        update path_data
+        <set>
+            <if test="app != null">`app` = #{app},</if>
+            <if test="path != null">`path` = #{path}</if>
+            <if test="fromPathCount != null">`from_path_count` = #{fromPathCount},</if>
+            <if test="fromAppCount != null">`from_app_count` = #{fromAppCount},</if>
+            <if test="fromAppTrueCount != null">`from_app_true_count` = #{fromAppTrueCount},</if>
+            <if test="toPathCount != null">`to_path_count` = #{toPathCount},</if>
+            <if test="toPathTrueCount != null">`to_path_true_count` = #{toPathTrueCount}</if>
+            <if test="daytime != null">`daytime` = #{daytime}</if>
+            <if test="appId != null">`app_id` = #{appId}</if>
+            <if test="companyKey != null">`companykey` = #{companyKey}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="incrFromPath" parameterType="com.learn.entity.PathDataEntity">
+        update path_data
+        set `from_path_count` = `from_path_count`+1
+        where app_id = #{appId} and companykey = #{companyKey} and daytime = #{endDate}
+    </update>
+
+    <update id="incrFromAppWithTrue" parameterType="com.learn.entity.PathDataEntity">
+        update path_data
+        set `from_app_count` = `from_app_count`+1,`from_app_true_count` = `from_app_true_count`+1
+        where app_id = #{appId} and companykey = #{companyKey} and daytime = #{endDate}
+    </update>
+
+    <update id="incrToPathWithTrue" parameterType="com.learn.entity.PathDataEntity">
+        update path_data
+        set `to_path_count` = `to_path_count`+1,`to_path_true_count` = `to_path_true_count`+1
+        where app_id = #{appId} and companykey = #{companyKey} and daytime = #{endDate}
+    </update>
+    <delete id="delete">
+		delete from path_data where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from path_data where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

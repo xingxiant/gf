@@ -1,0 +1,11 @@
+1、下载JDK8，安装，配置环境变量。 http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+2、下载MYSQL5.7（可用phpstudy代替，下载后运行即可，自动启动mysql） http://sw.bos.baidu.com/sw-search-sp/software/d986db9c4512a/phpStudy_2016.11.03.zip
+3、下载mysql操作工具，如navicat，你也可以用其他。http://dlsw.baidu.com/sw-search-sp/soft/0f/24312/navicat_trial_11.1.20.0.1449226634.exe
+4、下载eclipse J2EE 。Eclipse IDE for Java EE Developers   https://www.eclipse.org/downloads/eclipse-packages/   
+5、下载tomcat 8.0  切记不要下8.5，根据电脑选择32或者64位。  https://tomcat.apache.org/download-80.cgi
+
+1、创建数据库导入doc下SQL文件，数据库名词与sql文件同名。
+2、eclipse 导入maven项目，选择pom.xml上级文件夹。
+3、在db.properties中修改数据库账号密码为自己本地的。
+4、eclipse servers 配置tomcat 8， add 加入工程
+5、启动tomcat即可。

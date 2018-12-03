@@ -146,4 +146,36 @@ public class AppApiController extends AbstractController {
         return R.ok();
 
     }
+
+    @RequestMapping("/testRequestApp")
+    public R testRequestApp(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+
+        requestApp("http://rongkeweb.com/downloadReport","B4446091-5665-4FE3-9E2E-C097E7A9B385","","117.136.87.34","http%3A%2F%2F39.96.13.4%3A8080%2Fgf%2FappApi%2Frequest%3FcompanyKey%3DYeahmobi1%26appId%3D942443472%26callback%3DaHR0cDovL2dsb2JhbC55bXRyYWNraW5nLmNvbS9jb252P3RyYW5zYWN0aW9uX2lkPWY4MzA0ZWFjZC02ZTY3LTNmM2ItY2MwMzFhODk3Zjg2ZmE4YjdhZTM5YzMxYTBlNWM5MWUzMTE4NTUwN2Q4MzAwMTkmYWZmaWxpYXRlX2lkPTE%3D");
+
+        return R.ok();
+
+    }
+
+    private void requestApp(String url, String idfa, String mac, String ip, String callback) {
+        logger.info(url);
+        Connection connection =Jsoup.connect(url).ignoreContentType(true);
+        connection.data("IDFA",idfa);
+        connection.data("chainId","24");
+        connection.data("ipaddr",ip);
+        connection.data("callback",callback);
+        try {
+            Document document = connection.header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
+                    .timeout(5000).get();
+            if (document!= null){
+                logger.info("document:"+document);
+                logger.info("pathApi request success!");
+            }
+        } catch (Exception e){
+            logger.error("pathApi request fail!",e);
+        }
+    }
 }

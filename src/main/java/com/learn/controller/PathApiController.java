@@ -98,7 +98,7 @@ public class PathApiController extends AbstractController {
             //请求App idfa mac ip callback
             String url = pathEntity.getAppHost();
             //参数使用ifa
-            requestApp1(url,idfa, mac,ip,callback);
+            requestApp(url,idfa, mac,ip,callback);
             return R.ok();
         } catch (Exception e){
             logger.error("pathApi request fail",e);
@@ -133,9 +133,9 @@ public class PathApiController extends AbstractController {
     private void requestApp(String url, String idfa, String mac, String ip, String callback) {
         logger.info(url);
         Connection connection =Jsoup.connect(url).ignoreContentType(true);
-        connection.data("idfa",idfa);
-        connection.data("mac",mac);
-        connection.data("ip",ip);
+        connection.data("IDFA",idfa);
+        connection.data("chainId","24");
+        connection.data("ipaddr",ip);
         connection.data("callback",callback);
         try {
             Document document = connection.header("Accept", "*/*")
@@ -145,6 +145,7 @@ public class PathApiController extends AbstractController {
                     .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
                     .timeout(5000).get();
             if (document!= null){
+                logger.info("document:"+document);
                 logger.info("pathApi request success!");
             }
         } catch (Exception e){

@@ -118,6 +118,7 @@ public class AppApiController extends AbstractController {
                     .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
                     .timeout(5000).get();
             if (document!= null){
+                logger.info("pathApi request document:"+document);
                 logger.info("pathApi request success!");
             }
         } catch (Exception e){

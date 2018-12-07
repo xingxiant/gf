@@ -57,7 +57,7 @@ public class PathDataServiceImpl implements PathDataService {
             //判断 有没有今天的数据 否则加不上 没有则创建再加
             PathDataEntity pathDataEntity = new PathDataEntity();
             pathDataEntity.setAppId(appId);
-            pathDataEntity.setApp(path);
+            pathDataEntity.setApp(app);
             pathDataEntity.setPath(path);
             pathDataEntity.setCompanyKey(companyKey);
             pathDataEntity.setFromPathCount(0L);

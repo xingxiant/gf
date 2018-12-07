@@ -48,58 +48,105 @@ public class PathApiController extends AbstractController {
     private PathService pathService;
     private Base64 base64 = new Base64();
 
-
     private Logger logger = LoggerFactory.getLogger(getClass());
     /**
-     * 列表
+     * callback方式请求
      */
-    @RequestMapping(value="/request")
-    public R request(@RequestParam Map<String, Object> params) {
+    @RequestMapping(value="/requesta")
+    public R requesta(@RequestParam Map<String, Object> params) {
         try {
             logger.info("pathApi request"+params);
             String idfa= (String)params.get("idfa");
-            String mac= (String)params.get("mac");
-            if (mac == null){
-                mac ="";
-            }
             String ip= (String)params.get("ip");
             String companyKey = (String)params.get("companyKey");
             String appId = (String) params.get("appId");
+            String callback = (String) params.get("callback");
+            if(!checkParams(idfa,ip,companyKey,appId,callback)){
+                return R.error(400,"params error");
+            }
+            //替换&
             String callbackPath =((String)params.get("callback")).replace("&amp;","&");
-            logger.info("加密前:"+callbackPath);
-            //编码 base64
+            logger.info("加密前=>callbackPath:"+callbackPath);
+            //对callback base64加密
             byte[] callbackBytes = callbackPath.getBytes("UTF-8");
             callbackPath = base64.encodeToString(callbackBytes);
-            logger.info("pathApi request callbackPath:"+callbackPath);
-            //获得参数 idfa mac ip companyKey appId callabck
-            //校验pathInfo
-            //通过，则获得pathInfo
+            logger.info("加密后=>callbackPath:"+callbackPath);
+            //校验pathInfo 通过，则获得pathInfo
             PathEntity pathEntity = pathService.check(companyKey,appId);
             if (pathEntity == null){
-                logger.info("pathApi request fail parms:"+params);
-                return R.error("param error");
+                return R.error("companyKey or appId error");
             }
+            //获取今天的日期
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
-
             String now = df.format(new Date());
-
             Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
-
-
-            //增加上报数据
+            //增加渠道上报数据
             pathDataService.incrFromPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
             //设置app回调我们的接口
-            //生成callback  我们自己的加渠道的
-            String callback= pathEntity.getCallBackApp();
+            //生成callback  我们自己的appApi/requesta加渠道的
+            String mycallback= pathEntity.getCallBackApp();
             //urlCode编码
-            String str =java.net.URLEncoder.encode(callback+"&callback="+callbackPath,   "utf-8");
-            callback = str;
-            logger.info("pathApi request callback:"+callback);
+            String str =java.net.URLEncoder.encode(mycallback+"&callback="+callbackPath,   "utf-8");
+            String callbackFin = str;
             //请求App idfa mac ip callback
             String url = pathEntity.getAppHost();
-            //参数使用ifa
-            requestApp(url,idfa, mac,ip,callback);
-            return R.ok();
+            //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
+            url=url.replace("{_idfa_}",idfa);
+            url=url.replace("{_ip_}",ip);
+            url=url.replace("{_callback_}",callbackFin);
+            requestaApp(url);
+            return R.ok("success");
+        } catch (Exception e){
+            logger.error("pathApi request fail",e);
+            return R.error(500,"pathApi request fail");
+        }
+
+    }
+    /**
+     * 提前给回调地址的方式请求
+     */
+    @RequestMapping(value="/requestb")
+    public R requestb(@RequestParam Map<String, Object> params) {
+        try {
+            logger.info("pathApi request"+params);
+            String idfa= (String)params.get("idfa");
+            String ip= (String)params.get("ip");
+            String companyKey = (String)params.get("companyKey");
+            String appId = (String) params.get("appId");
+            String callback = (String) params.get("callback");
+            if(!checkParams(idfa,ip,companyKey,appId,callback)){
+                return R.error(400,"params error");
+            }
+            //经过替换&
+            String callbackPath =(callback).replace("&amp;","&");
+            logger.info("加密前=>callbackPath:"+callbackPath);
+
+            //对callback base64加密
+            byte[] callbackBytes = callbackPath.getBytes("UTF-8");
+            callbackPath = base64.encodeToString(callbackBytes);
+            logger.info("加密后=>callbackPath:"+callbackPath);
+
+            //拼接ai1wan_company_appId_callbackPath
+            String ai1wan_company_appId_callbackPath ="ai1wan_"+companyKey+"_"+appId+"_"+callbackPath;
+
+            //校验pathInfo 通过，则获得pathInfo
+            PathEntity pathEntity = pathService.check(companyKey,appId);
+            if (pathEntity == null){
+                return R.error("companyKey or appId error");
+            }
+            //获取今天的日期
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+            String now = df.format(new Date());
+            Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+            //增加渠道上报数据
+            pathDataService.incrFromPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
+
+
+            String url = pathEntity.getAppHost();
+            //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
+            url=url.replace("{_cac_}",ai1wan_company_appId_callbackPath);
+            requestaApp(url);
+            return R.ok("success");
         } catch (Exception e){
             logger.error("pathApi request fail",e);
             return R.error(500,"pathApi request fail");
@@ -107,36 +154,28 @@ public class PathApiController extends AbstractController {
 
     }
 
-
-    private void requestApp1(String url, String idfa, String mac, String ip, String callback) {
-        logger.info(url);
-        Connection connection =Jsoup.connect(url).ignoreContentType(true);
-        connection.data("ifa",idfa);
-        connection.data("mac",mac);
-        connection.data("ip",ip);
-        connection.data("callback",callback);
-        try {
-            Document document = connection.header("Accept", "*/*")
-                    .header("Accept-Encoding", "gzip, deflate")
-                    .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
-                    .header("Content-Type", "application/json;charset=UTF-8")
-                    .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
-
-                    .timeout(5000).get();
-            if (document!= null){
-                logger.info("pathApi request success!");
-            }
-        } catch (Exception e){
-            logger.error("pathApi request fail!",e);
+    private boolean checkParams(String idfa, String ip, String companyKey, String appId, String callback) {
+        if (idfa == null || idfa==""){
+            return false;
         }
+        if (ip == null || ip == ""){
+            return false;
+        }
+        if (companyKey == null || companyKey == ""){
+            return false;
+        }
+        if (appId == null || appId == ""){
+            return false;
+        }
+        if (callback == null || callback == ""){
+            return false;
+        }
+        return true;
     }
-    private void requestApp(String url, String idfa, String mac, String ip, String callback) {
+
+    private void requestaApp(String url) throws Exception{
         logger.info(url);
         Connection connection =Jsoup.connect(url).ignoreContentType(true);
-        connection.data("IDFA",idfa);
-        connection.data("chainId","24");
-        connection.data("ipaddr",ip);
-        connection.data("callback",callback);
         try {
             Document document = connection.header("Accept", "*/*")
                     .header("Accept-Encoding", "gzip, deflate")
@@ -150,7 +189,9 @@ public class PathApiController extends AbstractController {
             }
         } catch (Exception e){
             logger.error("pathApi request fail!",e);
+            throw e;
         }
     }
+
 
 }

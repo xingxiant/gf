@@ -13,6 +13,7 @@ import com.learn.service.WordService;
 import com.learn.utils.PageUtils;
 import com.learn.utils.Query;
 import com.learn.utils.R;
+import com.mysql.jdbc.log.LogUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -56,59 +57,142 @@ public class AppApiController extends AbstractController {
     /**
      * 请求
      */
-    @RequestMapping("/request")
-    public R request(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+    @RequestMapping("/requesta")
+    public R requesta(@RequestParam Map<String, Object> params,HttpServletResponse response) {
 
-        logger.info("appApi request"+params);
+        logger.info("appApi requesta"+params);
         //获得参数 companyKey appId
         String companyKey = (String)params.get("companyKey");
         String appId = (String) params.get("appId");
+        String callback=(String) params.get("callback");
+        if(!checkParams(companyKey,appId,callback)){
+            return R.error(400,"params callback error");
+        }
         //base64加密的
         //进行解密
-        String callBackPath = (String) params.get("callback");
+        String callBackPath;
         try {
-            callBackPath = new String(base64.decode(callBackPath), "UTF-8");
+            callBackPath = new String(base64.decode(callback), "UTF-8");
         } catch (Exception e){
-            logger.info("解密失败",e);
+            logger.info("解密callback失败:",e);
+            return R.error(400,"params error");
         }
-
-        //校验pathInfo
-        //通过，则获得pathInfo
+        //校验pathInfo 通过，则获得pathInfo
         PathEntity pathEntity = pathService.check(companyKey,appId);
         if (pathEntity == null){
             logger.info("appApi request fail parms:"+params);
-            return R.error("参数有误!");
+            return R.error(400,"params companyKey or appId error");
         }
         try {
+            //获取今天日期
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
             String now = df.format(new Date());
             Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
 
             //app回调数据加1
-            //增加上报数据
             pathDataService.incrFromApp(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
-            //概率回调渠道
+            //概率回调渠道 概率生成
             int p = (int)(1+Math.random()*(100-1+1));
             p=89;
+            logger.info("appApi p:"+p);
             if (p<90){
-                //不用编码
-                String callback = callBackPath;
-                pathRequest(callback);
-
+                pathRequest(callBackPath);
                 //回传渠道记录加1
                 pathDataService.incrToPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
             }
-            return R.ok();
+            return R.ok("success");
         } catch (Exception e){
             logger.error("appApi request fail!",e);
-            return R.error("appApi request fail!");
+            return R.error(500,"appApi request fail!");
         }
-
 
     }
 
-    private void pathRequest(String callback) {
-        logger.info("appApi request pathRequest:"+callback);
+    /**
+     * 请求
+     */
+    @RequestMapping("/requestb")
+    public R requestb(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+
+        logger.info("appApi requestb"+params);
+        //解析cac
+        String cac ="";
+        for (String key : params.keySet()){
+            String value = (String)params.get(key);
+            if (value !=null && value != ""){
+                if (value.startsWith("ai1wan_")){
+                    cac = value;
+                    break;
+                }
+            }
+        }
+        logger.info("cac:"+cac);
+        if (cac == ""){
+            return R.error(400,"params cac error");
+        }
+        //获得参数 companyKey appId
+        String[] values = cac.split("_");
+        String companyKey = values[1];
+        String appId = values[2];
+        String callback= values[3];
+        if(!checkParams(companyKey,appId,callback)){
+            return R.error(400,"params error");
+        }
+        //base64加密的
+        //进行解密
+        String callBackPath;
+        try {
+            callBackPath = new String(base64.decode(callback), "UTF-8");
+        } catch (Exception e){
+            logger.info("解密callback失败:",e);
+            return R.error(400,"params error");
+        }
+        //校验pathInfo 通过，则获得pathInfo
+        PathEntity pathEntity = pathService.check(companyKey,appId);
+        if (pathEntity == null){
+            logger.info("appApi request fail parms:"+params);
+            return R.error(400,"params companyKey or appId error");
+        }
+        try {
+            //获取今天日期
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+            String now = df.format(new Date());
+            Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+
+            //app回调数据加1
+            pathDataService.incrFromApp(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
+            //概率回调渠道 概率生成
+            int p = (int)(1+Math.random()*(100-1+1));
+            p=89;
+            logger.info("appApi p:"+p);
+            if (p<90){
+                pathRequest(callBackPath);
+                //回传渠道记录加1
+                pathDataService.incrToPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
+            }
+            return R.ok("success");
+        } catch (Exception e){
+            logger.error("appApi request fail!",e);
+            return R.error(500,"appApi request fail!");
+        }
+
+    }
+
+    private boolean checkParams(String companyKey, String appId, String callback) {
+        if (appId == null || appId==""){
+            return false;
+        }
+        if (callback == null || callback == ""){
+            return false;
+        }
+        if (companyKey == null || companyKey == ""){
+            return false;
+        }
+        return true;
+    }
+
+    private void pathRequest(String callback) throws Exception{
+        logger.info("appApi pathRequest url:"+callback);
         Connection connection =Jsoup.connect(callback).ignoreContentType(true);
         try {
             Document document = connection.header("Accept", "*/*")
@@ -122,7 +206,8 @@ public class AppApiController extends AbstractController {
                 logger.info("pathApi request success!");
             }
         } catch (Exception e){
-            logger.error("pathApi request fail!",e);
+            logger.error("appApi request fail!",e);
+            throw e;
         }
     }
 
@@ -148,35 +233,5 @@ public class AppApiController extends AbstractController {
 
     }
 
-    @RequestMapping("/testRequestApp")
-    public R testRequestApp(@RequestParam Map<String, Object> params,HttpServletResponse response) {
 
-        requestApp("http://rongkeweb.com/downloadReport","B4446091-5665-4FE3-9E2E-C097E7A9B385","","117.136.87.34","http%3A%2F%2F39.96.13.4%3A8080%2Fgf%2FappApi%2Frequest%3FcompanyKey%3DYeahmobi1%26appId%3D942443472%26callback%3DaHR0cDovL2dsb2JhbC55bXRyYWNraW5nLmNvbS9jb252P3RyYW5zYWN0aW9uX2lkPWY4MzA0ZWFjZC02ZTY3LTNmM2ItY2MwMzFhODk3Zjg2ZmE4YjdhZTM5YzMxYTBlNWM5MWUzMTE4NTUwN2Q4MzAwMTkmYWZmaWxpYXRlX2lkPTE%3D");
-
-        return R.ok();
-
-    }
-
-    private void requestApp(String url, String idfa, String mac, String ip, String callback) {
-        logger.info(url);
-        Connection connection =Jsoup.connect(url).ignoreContentType(true);
-        connection.data("IDFA",idfa);
-        connection.data("chainId","24");
-        connection.data("ipaddr",ip);
-        connection.data("callback",callback);
-        try {
-            Document document = connection.header("Accept", "*/*")
-                    .header("Accept-Encoding", "gzip, deflate")
-                    .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
-                    .header("Content-Type", "application/json;charset=UTF-8")
-                    .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
-                    .timeout(5000).get();
-            if (document!= null){
-                logger.info("document:"+document);
-                logger.info("pathApi request success!");
-            }
-        } catch (Exception e){
-            logger.error("pathApi request fail!",e);
-        }
-    }
 }

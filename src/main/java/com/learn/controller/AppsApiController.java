@@ -107,7 +107,7 @@ public class AppsApiController extends AbstractController {
 
     }
 
-    private void pathRequest(String callback) {
+    private void pathRequest(String callback) throws Exception{
         logger.info("appsApi request pathRequest:"+callback);
         Connection connection =Jsoup.connect(callback).ignoreContentType(true);
         try {
@@ -123,6 +123,7 @@ public class AppsApiController extends AbstractController {
             }
         } catch (Exception e){
             logger.error("appsApi request fail!",e);
+            throw e;
         }
     }
 

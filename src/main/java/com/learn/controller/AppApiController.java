@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -132,6 +133,7 @@ public class AppApiController extends AbstractController {
         String companyKey = values[1];
         String appId = values[2];
         String callback= values[3];
+
         if(!checkParams(companyKey,appId,callback)){
             return R.error(400,"params error");
         }
@@ -139,6 +141,8 @@ public class AppApiController extends AbstractController {
         //进行解密
         String callBackPath;
         try {
+            //urlcode解码
+            callback=URLDecoder.decode(callback,"utf-8");
             callBackPath = new String(base64.decode(callback), "UTF-8");
         } catch (Exception e){
             logger.info("解密callback失败:",e);
@@ -229,6 +233,4 @@ public class AppApiController extends AbstractController {
         return R.ok();
 
     }
-
-
 }

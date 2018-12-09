@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -125,7 +126,8 @@ public class PathApiController extends AbstractController {
             byte[] callbackBytes = callbackPath.getBytes("UTF-8");
             callbackPath = base64.encodeToString(callbackBytes);
             logger.info("加密后=>callbackPath:"+callbackPath);
-
+            //urlcode编码
+            callbackPath = URLEncoder.encode(callbackPath,"utf-8");
             //拼接ai1wan_company_appId_callbackPath
             String ai1wan_company_appId_callbackPath ="ai1wan_"+companyKey+"_"+appId+"_"+callbackPath;
 

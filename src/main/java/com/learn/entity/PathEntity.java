@@ -23,6 +23,7 @@ public class PathEntity {
 
     private String appHost;
 
+    private int weight;
     @Override
     public String toString() {
         return "PathEntity{" +
@@ -35,7 +36,16 @@ public class PathEntity {
                 ", callBackApp='" + callBackApp + '\'' +
                 ", createTime=" + createTime +
                 ", appHost='" + appHost + '\'' +
+                ", weight='" + weight + '\'' +
                 '}';
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
     }
 
     public String getAppHost() {

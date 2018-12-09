@@ -15,6 +15,7 @@
         <result property="createTime" column="time"/>
         <result property="pathDataId" column="path_data_id"/>
         <result property="appHost" column="app_host"/>
+        <result property="weight" column="weight"/>
     </resultMap>
 
     <select id="queryObject" resultType="com.learn.entity.PathEntity">
@@ -85,6 +86,7 @@
             <if test="callBackApp != null">`callback_app` = #{callBackApp},</if>
             <if test="createTime != null">`time` = #{createTime},</if>
             <if test="appHost != null">`app_host` = #{appHost}</if>
+            <if test="weight != null">`weight` = #{weight}</if>
         </set>
         where id = #{id}
     </update>

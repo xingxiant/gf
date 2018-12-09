@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -67,7 +69,9 @@ public class AppsApiController extends AbstractController {
         //base64加密的
         //进行解密
         String sub_affiliate_id = (String) params.get("sub_affiliate_id");
+
         try {
+            sub_affiliate_id = URLDecoder.decode(sub_affiliate_id,"utf-8");
             sub_affiliate_id = new String(base64.decode(sub_affiliate_id), "UTF-8");
         } catch (Exception e){
             logger.info("解密失败",e);
@@ -82,9 +86,11 @@ public class AppsApiController extends AbstractController {
             //增加上报数据
             pathDataService.incrFromApp(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
             //概率回调渠道
-            int p = (int)(1+Math.random()*(100-1+1));
-            p=89;
-            if (p<90){
+            //生成1-100
+            int p = new Random().nextInt(100)+1;
+            int weight = pathEntity.getWeight();
+            logger.info("appApi p:"+p+" weight:"+weight);
+            if (p<=weight){
                 //不用编码
                 String callback = sub_affiliate_id;
                 pathRequest(callback);

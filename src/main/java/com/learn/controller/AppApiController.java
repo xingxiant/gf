@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -91,11 +88,11 @@ public class AppApiController extends AbstractController {
 
             //app回调数据加1
             pathDataService.incrFromApp(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
-            //概率回调渠道 概率生成
-            int p = (int)(1+Math.random()*(100-1+1));
-            p=89;
-            logger.info("appApi p:"+p);
-            if (p<90){
+            //生成1-100
+            int p = new Random().nextInt(100)+1;
+            int weight = pathEntity.getWeight();
+            logger.info("appApi p:"+p+" weight:"+weight);
+            if (p<=weight){
                 pathRequest(callBackPath);
                 //回传渠道记录加1
                 pathDataService.incrToPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
@@ -161,11 +158,11 @@ public class AppApiController extends AbstractController {
 
             //app回调数据加1
             pathDataService.incrFromApp(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
-            //概率回调渠道 概率生成
-            int p = (int)(1+Math.random()*(100-1+1));
-            p=89;
-            logger.info("appApi p:"+p);
-            if (p<90){
+            //生成1-100
+            int p = new Random().nextInt(100)+1;
+            int weight = pathEntity.getWeight();
+            logger.info("appApi p:"+p+" weight:"+weight);
+            if (p<=weight){
                 pathRequest(callBackPath);
                 //回传渠道记录加1
                 pathDataService.incrToPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);

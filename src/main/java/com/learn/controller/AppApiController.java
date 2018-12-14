@@ -211,13 +211,37 @@ public class AppApiController extends AbstractController {
             throw e;
         }
     }
-
+    private void pathRequest1(String url,String callback) throws Exception{
+        logger.info("appApi pathRequest url:"+url);
+        Connection connection =Jsoup.connect(url).ignoreContentType(true);
+        connection.data("callback",callback);
+        try {
+            Document document = connection.header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
+                    .timeout(5000).get();
+            if (document!= null){
+                logger.info("pathApi request document:"+document);
+                logger.info("pathApi request success!");
+            }
+        } catch (Exception e){
+            logger.error("appApi request fail!",e);
+            throw e;
+        }
+    }
     /**
      * 请求
      */
     @RequestMapping("/testApp")
     public R testApp(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        try {
+            pathRequest1("http://39.96.13.4:8080/gf/appApi/testApp?idfa=D6C71C4F-513C-4574-9C5B-8DA597AEF59C&ip=223.72.86.46","http://39.96.13.4:8080/gf/appApi/requesta?appId=1361571064&companyKey=daiding&callback=aHR0cHM6Ly93d3cuYmFpZHUuY29tL2E/YT0x");
 
+        } catch (Exception e){
+            logger.error("error",e);
+        }
         logger.info("appApi testApp"+params);
 
         return R.ok();
@@ -228,7 +252,12 @@ public class AppApiController extends AbstractController {
      */
     @RequestMapping("/testPath")
     public R testPath(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        try {
+            pathRequest("http://39.96.13.4:8080/gf/appApi/testApp?idfa=D6C71C4F-513C-4574-9C5B-8DA597AEF59C&ip=223.72.86.46&callback=http%3a%2f%2f39.96.13.4%3a8080%2fgf%2fappApi%2frequesta%3fappId%3d1361571064%26companyKey%3ddaiding%26callback%3daHR0cHM6Ly93d3cuYmFpZHUuY29tL2E%2fYT0x");
 
+        } catch (Exception e){
+            logger.error("error",e);
+        }
         logger.info("appApi testPath"+params);
         return R.ok();
 

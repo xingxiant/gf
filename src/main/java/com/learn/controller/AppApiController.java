@@ -6,10 +6,8 @@ import com.learn.dao.FromAppDao;
 import com.learn.dao.FromPathDao;
 import com.learn.dao.ToPathDao;
 import com.learn.entity.*;
-import com.learn.service.DataService;
-import com.learn.service.PathDataService;
-import com.learn.service.PathService;
-import com.learn.service.WordService;
+import com.learn.service.*;
+import com.learn.utils.DateUtils;
 import com.learn.utils.PageUtils;
 import com.learn.utils.Query;
 import com.learn.utils.R;
@@ -45,6 +43,10 @@ public class AppApiController extends AbstractController {
 
     @Autowired
     private PathService pathService;
+
+    @Autowired
+    private RequestService requestService;
+
     @Autowired
     private FromAppDao fromAppDao;
     @Autowired
@@ -178,7 +180,55 @@ public class AppApiController extends AbstractController {
         }
 
     }
+    /**
+     * 请求
+     */
+    @RequestMapping("/req")
+    public R req(@RequestParam Map<String, String> params,HttpServletResponse response) {
 
+        logger.info("appApi req"+params);
+
+        String identif = params.get("identif");
+        logger.info("identif:"+identif);
+        if (identif == ""){
+            return R.error(400,"params cac error");
+        }
+        DataFromPathEntity data = requestService.getPathResuestByUID(identif);
+        if (data == null){
+            logger.info("appApi request error parms:"+params);
+            return R.error(400,"params error");
+        }
+        //校验pathInfo 通过，则获得pathInfo
+        PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
+        if (pathEntity == null){
+            logger.info("appApi request fail parms:"+params);
+            return R.error(400,"params companyKey or appId error");
+        }
+
+        try {
+            //获取今天日期
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+            String now = df.format(new Date());
+            Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+
+            //app回调数据加1
+            pathDataService.incrFromApp(data.getPathName(),data.getCompanyKey(),data.getAppName(),data.getAppId(),endDate);
+            //生成1-100
+            int p = new Random().nextInt(100)+1;
+            int weight = pathEntity.getWeight();
+            logger.info("appApi p:"+p+" weight:"+weight);
+            if (p<=weight){
+                pathRequest(data.getCallback());
+                //回传渠道记录加1
+                pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+            }
+            return R.ok("success");
+        } catch (Exception e){
+            logger.error("appApi request fail!",e);
+            return R.error(500,"appApi request fail!");
+        }
+
+    }
     private boolean checkParams(String companyKey, String appId, String callback) {
         if (appId == null || appId==""){
             return false;

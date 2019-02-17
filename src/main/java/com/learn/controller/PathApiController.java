@@ -5,10 +5,7 @@ import com.learn.dao.DataDao;
 import com.learn.dao.FromPathDao;
 import com.learn.dao.PathDataDao;
 import com.learn.entity.*;
-import com.learn.service.DataService;
-import com.learn.service.PathDataService;
-import com.learn.service.PathService;
-import com.learn.service.WordService;
+import com.learn.service.*;
 import com.learn.utils.PageUtils;
 import com.learn.utils.Query;
 import com.learn.utils.R;
@@ -44,6 +41,9 @@ public class PathApiController extends AbstractController {
 
     @Autowired
     private PathDataService pathDataService;
+
+    @Autowired
+    private RequestService requestService;
 
     @Autowired
     private PathService pathService;
@@ -210,6 +210,82 @@ public class PathApiController extends AbstractController {
 
     }
 
+    /**
+     * 提前给回调地址的方式请求
+     */
+    @RequestMapping(value="/req")
+    public R req(@RequestParam Map<String, Object> params) {
+        try {
+            logger.info("pathApi req"+params);
+            String idfa= (String)params.get("idfa");
+            String ip= (String)params.get("ip");
+            String companyKey = (String)params.get("companyKey");
+            String appId = (String) params.get("appId");
+            String callback = (String) params.get("callback");
+            if(!checkParams(idfa,ip,companyKey,appId,callback)){
+                return R.error(400,"params error");
+            }
+            //替换&
+            String callbackPath =((String)params.get("callback")).replace("&amp;","&");
+
+            //校验pathInfo 通过，则获得pathInfo
+            PathEntity pathEntity = pathService.check(companyKey,appId);
+            if (pathEntity == null){
+                return R.error("companyKey or appId error");
+            }
+            DataFromPathEntity dataFromPathEntity = transformToDataFromPathEntity(idfa, companyKey, pathEntity.getName(), appId, pathEntity.getAppName(),callback);
+            //保存请求记录
+            requestService.savePathRequest(dataFromPathEntity);
+            //获取今天的日期
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+            String now = df.format(new Date());
+            Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+            //增加渠道上报数据
+            pathDataService.incrFromPath(pathEntity.getName(),companyKey,pathEntity.getAppName(),appId,endDate);
+            //设置app回调我们的接口
+            //生成callback  我们自己的appApi/requesta加渠道的
+            String mycallback= pathEntity.getCallBackApp();
+            //不经过 urlCode编码 tomcat自动编码
+            String callbackFin = mycallback+"&identif="+dataFromPathEntity.getUniqueId();
+            logger.info("callbackFin:"+callbackFin);
+            //请求App idfa mac ip callback
+            String url = pathEntity.getAppHost();
+            //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
+            url=url.replace("{_idfa_}",idfa);
+            url=url.replace("{_ip_}",ip);
+            String paramName = pathEntity.getCallBackPath();
+            requestaAppPro(url,paramName,callbackFin);
+            //请求记录设置为成功
+            dataFromPathEntity.setIsReportSuccess(1);
+            requestService.updatePathRequest(dataFromPathEntity);
+            return R.ok("success");
+        } catch (Exception e){
+            logger.error("pathApi request fail",e);
+            return R.error(500,"pathApi request fail");
+        }
+
+
+    }
+
+    private DataFromPathEntity transformToDataFromPathEntity(String idfa, String companyKey, String pathName, String appId, String appName, String callback) {
+        DataFromPathEntity dataFromPathEntity = new DataFromPathEntity();
+        dataFromPathEntity.setAppId(appId);
+        dataFromPathEntity.setAppName(appName);
+        dataFromPathEntity.setCallback(callback);
+        //设置为上报失败
+        dataFromPathEntity.setIsReportSuccess(0);
+        dataFromPathEntity.setCompanyKey(companyKey);
+        dataFromPathEntity.setPathName(pathName);
+        dataFromPathEntity.setIdfa(idfa);
+        Long time = System.currentTimeMillis()/1000;
+        dataFromPathEntity.setTime(time);
+        //产生三位随机数
+        int random=(int)(Math.random()*900)+100;
+        String uniqueId = companyKey+"_"+appId+String.valueOf(random)+time;
+        dataFromPathEntity.setUniqueId(uniqueId);
+        return dataFromPathEntity;
+    }
+
     private boolean checkParams(String idfa, String ip, String companyKey, String appId, String callback) {
         if (idfa == null || idfa==""){
             return false;
@@ -249,7 +325,7 @@ public class PathApiController extends AbstractController {
         }
     }
     private void requestaAppPro(String url,String paramName,String param) throws Exception{
-        logger.info("requestaAppPro url:"+url+"paramName:"+paramName+"param"+param);
+        logger.info("requestaAppPro url:"+url+" paramName:"+paramName+" param"+param);
         Connection connection =Jsoup.connect(url).ignoreContentType(true);
         connection.data(paramName,param);
         try {

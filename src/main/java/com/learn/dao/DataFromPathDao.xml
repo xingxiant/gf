@@ -27,11 +27,22 @@
     </select>
     <select id="queryList" resultType="com.learn.entity.DataFromPathEntity">
         select * from data_from_path where 1=1
-
-        <if test="idfa != null and idfa != ''">
-            and idfa like '%${idfa}%'
+        <if test="content != null and content != ''">
+            and content like '%${content}%'
         </if>
-        order by id desc
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
 
     </select>
     <select id="getDataFromPathByUID" resultType="com.learn.entity.DataFromPathEntity">

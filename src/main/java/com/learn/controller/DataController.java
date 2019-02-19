@@ -5,12 +5,8 @@ import java.util.*;
 
 import com.baidu.aip.nlp.AipNlp;
 import com.learn.dao.*;
-import com.learn.entity.PathDataEntity;
-import com.learn.entity.PathEntity;
-import com.learn.entity.WordEntity;
-import com.learn.service.PathDataService;
-import com.learn.service.PathService;
-import com.learn.service.WordService;
+import com.learn.entity.*;
+import com.learn.service.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.json.JSONArray;
@@ -22,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.learn.entity.DataEntity;
-import com.learn.service.DataService;
 import com.learn.utils.PageUtils;
 import com.learn.utils.Query;
 import com.learn.utils.R;
@@ -45,6 +39,8 @@ public class DataController extends AbstractController {
 
     @Autowired
     private PathService pathService;
+    @Autowired
+    private DataFromPathService dataFromPathService;
     @Autowired
     private FromAppDao fromAppDao;
     @Autowired
@@ -80,6 +76,23 @@ public class DataController extends AbstractController {
 
         List<PathEntity> dataList = pathService.queryPathData(query);
         int total = pathService.queryTotal(query);
+
+        PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
+
+        return R.ok().put("page", pageUtil);
+    }
+    /**
+     * 渠道请求列表列表
+     */
+    @RequestMapping("/dataFromPathList")
+    public R dataFromPathList(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        //查询列表数据
+        Query query = new Query(params);
+
+        List<DataFromPathEntity> dataList = dataFromPathService.queryList(query);
+        int total = dataService.queryTotal(query);
 
         PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
 

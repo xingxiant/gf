@@ -27,8 +27,8 @@
     </select>
     <select id="queryList" resultType="com.learn.entity.DataFromPathEntity">
         select * from data_from_path where 1=1
-        <if test="content != null and content != ''">
-            and content like '%${content}%'
+        <if test="idfa != null and idfa != ''">
+            and idfa like '%${idfa}%'
         </if>
 
 
@@ -52,7 +52,7 @@
     <select id="queryTotal" resultType="int">
         select count(*) from data_from_path where 1=1
         <if test="idfa != null and idfa != ''">
-            and path like '%${idfa}%'
+            and idfa like '%${idfa}%'
         </if>
 
     </select>
@@ -74,13 +74,13 @@
         update data_from_path
         <set>
             <if test="appId != null">`app_id` = #{appId},</if>
-            <if test="companyKey != null">`companykey` = #{companyKey}</if>
+            <if test="companyKey != null">`companykey` = #{companyKey},</if>
             <if test="appName != null">`app_name` = #{appName},</if>
             <if test="pathName != null">`path_name` = #{pathName},</if>
             <if test="callback != null">`callback` = #{callback},</if>
             <if test="uniqueId != null">`unique_id` = #{uniqueId},</if>
-            <if test="time != null">`time` = #{time}</if>
-            <if test="idfa != null">`idfa` = #{idfa}</if>
+            <if test="time != null">`time` = #{time},</if>
+            <if test="idfa != null">`idfa` = #{idfa},</if>
             <if test="isReportSuccess != null">`is_report_success` = #{isReportSuccess}</if>
         </set>
         where id = #{id}

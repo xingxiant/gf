@@ -1,6 +1,6 @@
 $(function () {
     $("#jqGrid").jqGrid({
-        url: '../data/pathList',
+        url: '../data/dataFromPathList',
         datatype: "json",
         colModel: [
             {
@@ -18,19 +18,19 @@ $(function () {
                 label: 'app名称',
                 name: 'appName',
                 index: 'app_name',
-                width: 50,
+                width: 25,
             },
             {
                 label: '渠道名称',
                 name: 'companyKey',
                 index: 'companykey',
-                width: 50
+                width: 28
             },
             {
                 label: 'idfa',
                 name: 'idfa',
                 index: 'idfa',
-                width: 50,
+                width: 70,
             },
             {
                 label: 'callback',
@@ -45,14 +45,14 @@ $(function () {
                 width: 50,
             },
             {
-                label: '是否上报成功',
-                name: 'is_report_success',
+                label: '是否上报',
+                name: 'isReportSuccess',
                 index: 'is_report_success',
-                width: 50,
+                width: 20,
             },
             {
                 label: '上报结果',
-                name: 'is_report_success',
+                name: 'isReportSuccess',
                 index: 'is_report_success',
                 width: 50,
             },
@@ -101,7 +101,8 @@ var vm = new Vue({
             appId: '',
             appName: '',
             callBackPath: '',
-            callBackApp: ''
+            callBackApp: '',
+            idfa:''
         },
         showAdd: false,
         showInfo: false,

@@ -313,4 +313,19 @@ public class AppApiController extends AbstractController {
         return R.ok();
 
     }
+    /**
+     * 请求
+     */
+    @RequestMapping("/testApp1")
+    public R testApp1(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        try {
+            logger.info("testApi1"+params.toString());
+        } catch (Exception e){
+            logger.error("error",e);
+        }
+        logger.info("appApi testApp"+params);
+
+        return R.ok();
+
+    }
 }

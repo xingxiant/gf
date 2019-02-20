@@ -92,7 +92,7 @@ public class DataController extends AbstractController {
         Query query = new Query(params);
 
         List<DataFromPathEntity> dataList = dataFromPathService.queryList(query);
-        int total = dataService.queryTotal(query);
+        int total = dataFromPathService.queryTotal(query);
 
         PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
 

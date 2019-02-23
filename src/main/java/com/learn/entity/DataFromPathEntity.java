@@ -26,6 +26,16 @@ public class DataFromPathEntity implements Serializable {
     private String idfa;
     //是否上报成功 0失败 1成功
     private Integer isReportSuccess;
+    //上报返回值
+    private String reportResult;
+
+    public String getReportResult() {
+        return reportResult;
+    }
+
+    public void setReportResult(String reportResult) {
+        this.reportResult = reportResult;
+    }
 
     public Integer getIsReportSuccess() {
         return isReportSuccess;
@@ -124,6 +134,7 @@ public class DataFromPathEntity implements Serializable {
                 ", time=" + time +
                 ", idfa='" + idfa + '\'' +
                 ", isReportSuccess=" + isReportSuccess +
+                ", reportResult='" + reportResult + '\'' +
                 '}';
     }
 }

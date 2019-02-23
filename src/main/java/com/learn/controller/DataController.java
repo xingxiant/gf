@@ -42,6 +42,8 @@ public class DataController extends AbstractController {
     @Autowired
     private DataFromPathService dataFromPathService;
     @Autowired
+    private DataFromAppService dataFromAppService;
+    @Autowired
     private FromAppDao fromAppDao;
     @Autowired
     private ToPathDao toPathDao;
@@ -93,6 +95,24 @@ public class DataController extends AbstractController {
 
         List<DataFromPathEntity> dataList = dataFromPathService.queryList(query);
         int total = dataFromPathService.queryTotal(query);
+
+        PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
+
+        return R.ok().put("page", pageUtil);
+    }
+
+    /**
+     * 广告请求列表列表
+     */
+    @RequestMapping("/dataFromAppList")
+    public R dataFromAppList(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        //查询列表数据
+        Query query = new Query(params);
+
+        List<DataFromAppEntity> dataList = dataFromAppService.queryList(query);
+        int total = dataFromAppService.queryTotal(query);
 
         PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
 

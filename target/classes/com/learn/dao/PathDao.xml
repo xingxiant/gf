@@ -15,6 +15,7 @@
         <result property="createTime" column="time"/>
         <result property="pathDataId" column="path_data_id"/>
         <result property="appHost" column="app_host"/>
+        <result property="weight" column="weight"/>
     </resultMap>
 
     <select id="queryObject" resultType="com.learn.entity.PathEntity">

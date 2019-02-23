@@ -7,6 +7,7 @@ com/learn/entity/ToPathEntity.class
 com/learn/service/impl/SysGeneratorServiceImpl.class
 com/learn/dao/SysGeneratorDao.class
 com/learn/dao/SysLogDao.class
+com/learn/controller/AppsApiController.class
 com/learn/controller/SysLoginController.class
 com/learn/validator/group/UpdateGroup.class
 com/learn/controller/SysLogController.class
@@ -30,6 +31,7 @@ com/learn/utils/FBSegment.class
 com/learn/service/SysConfigService.class
 com/learn/entity/SysUserEntity.class
 com/learn/utils/PageUtils.class
+com/learn/controller/PathsApiController.class
 com/learn/validator/group/Group.class
 com/learn/service/impl/PathServiceImpl.class
 com/learn/dao/PathDataDao.class

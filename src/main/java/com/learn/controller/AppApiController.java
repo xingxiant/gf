@@ -288,7 +288,7 @@ public class AppApiController extends AbstractController {
     @RequestMapping("/testApp")
     public R testApp(@RequestParam Map<String, Object> params,HttpServletResponse response) {
         try {
-            pathRequest1("http://39.96.13.4:8080/gf/appApi/testApp?idfa=D6C71C4F-513C-4574-9C5B-8DA597AEF59C&ip=223.72.86.46","http://39.96.13.4:8080/gf/appApi/requesta?appId=1361571064&companyKey=daiding&callback=aHR0cHM6Ly93d3cuYmFpZHUuY29tL2E/YT0x");
+            //pathRequest1("http://39.96.13.4:8080/gf/appApi/testApp?idfa=D6C71C4F-513C-4574-9C5B-8DA597AEF59C&ip=223.72.86.46","http://39.96.13.4:8080/gf/appApi/requesta?appId=1361571064&companyKey=daiding&callback=aHR0cHM6Ly93d3cuYmFpZHUuY29tL2E/YT0x");
 
         } catch (Exception e){
             logger.error("error",e);

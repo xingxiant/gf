@@ -32,9 +32,7 @@ public class DataFromPathServiceImpl implements DataFromPathService {
 	@Override
 	public List<DataFromPathEntity> queryList(Map<String, Object> map){
         List<DataFromPathEntity> list = dataDao.queryList(map);
-        for(DataFromPathEntity entity : list){
-																										}
-		return list;
+        return list;
 	}
 	
 	@Override

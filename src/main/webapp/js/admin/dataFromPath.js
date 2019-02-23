@@ -52,8 +52,8 @@ $(function () {
             },
             {
                 label: '上报结果',
-                name: 'isReportSuccess',
-                index: 'is_report_success',
+                name: 'reportResult',
+                index: 'report_result',
                 width: 50,
             },
             {

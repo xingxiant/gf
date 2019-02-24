@@ -87,7 +87,7 @@
 
 
     <delete id="delete">
-		delete from data_from_app where id = #{value}
+		delete from data_from_app where time &lt;= #{value}
 	</delete>
 
     <delete id="deleteBatch">

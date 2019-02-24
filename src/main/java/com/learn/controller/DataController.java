@@ -1,5 +1,6 @@
 package com.learn.controller;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -49,6 +50,8 @@ public class DataController extends AbstractController {
     private ToPathDao toPathDao;
     @Autowired
     private PathDao pathDao;
+    @Autowired
+    private UserPathDao userPathDao;
     private FromPathDao fromPathDao;
 
     /**
@@ -237,6 +240,26 @@ public class DataController extends AbstractController {
 
         return R.ok().put("data", data);
     }
+    /**
+     * 信息详情
+     */
+    @RequestMapping("/dataFromPathInfo/{id}")
+    public R dataFromPathInfo(@PathVariable("id") Long id,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        DataFromPathEntity data = dataFromPathService.queryObject(id);
+
+        return R.ok().put("data", data);
+    }
+    /**
+     * 信息详情
+     */
+    @RequestMapping("/dataFromAppInfo/{id}")
+    public R dataFromAppInfo(@PathVariable("id") Long id,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        DataFromAppEntity data = dataFromAppService.queryObject(id);
+
+        return R.ok().put("data", data);
+    }
     @RequestMapping("/sf2/{id}")
     public R sf2(@PathVariable("id") Long id) {
         //这种手撸算法佷特殊，主要是支持多个自定义的类别
@@ -319,9 +342,30 @@ public class DataController extends AbstractController {
     @RequestMapping("/pathSave")
     public R save(@RequestBody PathEntity data,HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
+        data.setCreateTime(new Timestamp(System.currentTimeMillis()));
+
+        //transToUserPathEntity(data);
+
         pathService.save(data);
 
         return R.ok();
+    }
+
+    private void transToUserPathEntity(PathEntity data) {
+        if (data.getUserIds() != null && !data.getUserIds().equals("")){
+            //逗号分隔
+            String userIds = data.getUserIds();
+            String[] ids = userIds.split(",");
+            for (String id : ids){
+                UserPathEntity userPathEntity = new UserPathEntity();
+                userPathEntity.setAppId(data.getAppId());
+                userPathEntity.setAppName(data.getAppName());
+                userPathEntity.setPathName(data.getName());
+                userPathEntity.setCompanyKey(data.getCompanyKey());
+                userPathEntity.setUserId(Long.parseLong(id));
+                userPathDao.save(userPathEntity);
+            }
+        }
     }
 
     /**

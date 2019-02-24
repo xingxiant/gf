@@ -1,6 +1,6 @@
 $(function () {
     $("#jqGrid").jqGrid({
-        url: '../data/dataFromPathList',
+        url: '../data/pathList',
         datatype: "json",
         colModel: [
             {
@@ -15,55 +15,58 @@ $(function () {
                 }
             },
             {
+                label: '渠道名称',
+                name: 'name',
+                index: 'name',
+                width: 50,
+            },
+            {
+                label: '渠道标识',
+                name: 'companyKey',
+                index: 'companykey',
+                width: 50
+            },
+            {
+                label: 'appId',
+                name: 'appId',
+                index: 'app_id',
+                width: 50,
+            },
+            {
                 label: 'app名称',
                 name: 'appName',
                 index: 'app_name',
-                width: 25,
-            },
-            {
-                label: '渠道名称',
-                name: 'companyKey',
-                index: 'companykey',
-                width: 28
-            },
-            {
-                label: 'idfa',
-                name: 'idfa',
-                index: 'idfa',
-                width: 70,
-            },
-            {
-                label: 'callback',
-                name: 'callback',
-                index: 'callback',
                 width: 50,
             },
             {
-                label: '唯一标识',
-                name: 'uniqueId',
-                index: 'unique_id',
+                label: '回调渠道地址',
+                name: 'callBackPath',
+                index: 'callback_path',
                 width: 50,
             },
             {
-                label: '是否上报',
-                name: 'isReportSuccess',
-                index: 'is_report_success',
-                width: 20,
-            },
-            {
-                label: '上报结果',
-                name: 'reportResult',
-                index: 'report_result',
+                label: 'app回调我们的地址',
+                name: 'callBackApp',
+                index: 'callback_app',
                 width: 50,
             },
             {
-                label: '时间',
-                name: 'time',
+                label: 'app主机',
+                name: 'appHost',
+                index: 'app_host',
+                width: 50,
+            },
+            {
+                label: 'userId列表',
+                name: 'userIds',
+                index: 'user_ids',
+                width: 50,
+            },
+            {
+                label: '创建时间',
+                name: 'createTime',
                 index: 'time',
                 width: 50,
-                formatter:function(value,options,row){
-                    return new Date(value*1000).Format('yyyy-MM-dd HH:mm:ss');
-                }
             }
 
         ],
@@ -94,27 +97,7 @@ $(function () {
     });
 
 });
-// 对Date的扩展，将 Date 转化为指定格式的String
-// 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
-// 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
-// 例子：
-// (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
-// (new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18
-Date.prototype.Format = function (fmt) { //author: meizz
-    var o = {
-        "M+": this.getMonth() + 1, //月份
-        "d+": this.getDate(), //日
-        "H+": this.getHours(), //小时
-        "m+": this.getMinutes(), //分
-        "s+": this.getSeconds(), //秒
-        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
-        "S": this.getMilliseconds() //毫秒
-    };
-    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-    for (var k in o)
-        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-    return fmt;
-}
+
 var vm = new Vue({
     el: '#rrapp',
     data: {
@@ -124,8 +107,7 @@ var vm = new Vue({
             appId: '',
             appName: '',
             callBackPath: '',
-            callBackApp: '',
-            idfa:''
+            callBackApp: ''
         },
         showAdd: false,
         showInfo: false,
@@ -208,7 +190,7 @@ var vm = new Vue({
         }
         ,
         getInfo: function (id) {
-            $.get("../data/dataFromPathInfo/" + id, function (r) {
+            $.get("../data/pathInfo/" + id, function (r) {
                 vm.data = r.data;
             });
         }

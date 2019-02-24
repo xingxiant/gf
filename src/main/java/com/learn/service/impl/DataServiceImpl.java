@@ -33,8 +33,6 @@ public class DataServiceImpl implements DataService {
 	@Override
 	public List<DataEntity> queryList(Map<String, Object> map){
         List<DataEntity> list = dataDao.queryList(map);
-        for(DataEntity entity : list){
-																										}
 		return list;
 	}
 	

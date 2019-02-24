@@ -48,6 +48,9 @@ public class AppApiController extends AbstractController {
     private RequestService requestService;
 
     @Autowired
+    private ResponseService responseService;
+
+    @Autowired
     private FromAppDao fromAppDao;
     @Autowired
     private ToPathDao toPathDao;
@@ -199,6 +202,7 @@ public class AppApiController extends AbstractController {
             logger.info("appApi request error parms:"+params);
             return R.error(400,"params error");
         }
+        DataFromAppEntity appEntity = transToApp(data);
         //校验pathInfo 通过，则获得pathInfo
         PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
         if (pathEntity == null){
@@ -219,17 +223,41 @@ public class AppApiController extends AbstractController {
             int weight = pathEntity.getWeight();
             logger.info("appApi p:"+p+" weight:"+weight);
             if (p<=weight){
-                pathRequest(data.getCallback());
+                String result =pathRequest(data.getCallback());
+                appEntity.setIsReportSuccess(1);
+                if (result!=null){
+                    appEntity.setReportResult(result);
+                }
                 //回传渠道记录加1
                 pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+            } else {
+                appEntity.setIsReportSuccess(1);
+                appEntity.setReportResult("deducted");
             }
             return R.ok("success");
         } catch (Exception e){
             logger.error("appApi request fail!",e);
+            appEntity.setIsReportSuccess(0);
             return R.error(500,"appApi request fail!");
+        } finally {
+            responseService.savePathRequest(appEntity);
         }
 
     }
+
+    private DataFromAppEntity transToApp(DataFromPathEntity data) {
+        DataFromAppEntity appEntity = new DataFromAppEntity();
+        appEntity.setAppId(data.getAppId());
+        appEntity.setAppName(data.getAppName());
+        appEntity.setCompanyKey(data.getCompanyKey());
+        appEntity.setPathName(data.getPathName());
+        appEntity.setIdfa(data.getIdfa());
+        appEntity.setTime(System.currentTimeMillis()/1000);
+        appEntity.setIsReportSuccess(0);
+
+        return appEntity;
+    }
+
     private boolean checkParams(String companyKey, String appId, String callback) {
         if (appId == null || appId==""){
             return false;
@@ -243,7 +271,7 @@ public class AppApiController extends AbstractController {
         return true;
     }
 
-    private void pathRequest(String callback) throws Exception{
+    private String  pathRequest(String callback) throws Exception{
         logger.info("appApi pathRequest url:"+callback);
         Connection connection =Jsoup.connect(callback).ignoreContentType(true);
         try {
@@ -254,8 +282,11 @@ public class AppApiController extends AbstractController {
                     .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
                     .timeout(5000).get();
             if (document!= null){
-                logger.info("pathApi request document:"+document);
+                logger.info("pathApi request document:"+document.text());
                 logger.info("pathApi request success!");
+                return document.text();
+            }else {
+                return null;
             }
         } catch (Exception e){
             logger.error("appApi request fail!",e);

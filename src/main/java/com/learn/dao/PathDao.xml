@@ -16,6 +16,7 @@
         <result property="pathDataId" column="path_data_id"/>
         <result property="appHost" column="app_host"/>
         <result property="weight" column="weight"/>
+        <result property="userIds" column="user_ids"/>
     </resultMap>
 
     <select id="queryObject" resultType="com.learn.entity.PathEntity">
@@ -59,12 +60,12 @@
 		insert into path
 		(
 			`name`,
-			`companykey`,`app_id`,`app_name`,`callback_path`,`callback_app`,`time`,`app_host`
+			`companykey`,`app_id`,`app_name`,`callback_path`,`callback_app`,`time`,`app_host`,`user_ids`
 		)
 		values
 		(
 			#{name},
-			#{companyKey},#{appId},#{appName},#{callBackPath},#{callBackApp},#{createTime},#{appHost}
+			#{companyKey},#{appId},#{appName},#{callBackPath},#{callBackApp},#{createTime},#{appHost},#{userIds}
 		)
 	</insert>
     <select id="queryByAIdAndCpKey" resultType="com.learn.entity.PathEntity">
@@ -86,6 +87,7 @@
             <if test="callBackApp != null">`callback_app` = #{callBackApp},</if>
             <if test="createTime != null">`time` = #{createTime},</if>
             <if test="appHost != null">`app_host` = #{appHost}</if>
+            <if test="userIds != null">`user_ids` = #{userIds}</if>
         </set>
         where id = #{id}
     </update>

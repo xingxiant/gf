@@ -1,9 +1,11 @@
 package com.learn.entity;
 
+import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 
-public class PathEntity {
-    private static final long serialVersionUID = 3L;
+public class PathEntity implements Serializable {
+    private static final long serialVersionUID = 100L;
 
     private Long id;
 
@@ -19,11 +21,14 @@ public class PathEntity {
 
     private String callBackApp;
 
-    private Date createTime = new Date();
+    private Timestamp createTime;
 
     private String appHost;
 
     private int weight;
+
+    private String userIds;
+
     @Override
     public String toString() {
         return "PathEntity{" +
@@ -36,8 +41,17 @@ public class PathEntity {
                 ", callBackApp='" + callBackApp + '\'' +
                 ", createTime=" + createTime +
                 ", appHost='" + appHost + '\'' +
-                ", weight='" + weight + '\'' +
+                ", weight=" + weight +
+                ", userIds='" + userIds + '\'' +
                 '}';
+    }
+
+    public String getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(String userIds) {
+        this.userIds = userIds;
     }
 
     public int getWeight() {
@@ -56,11 +70,11 @@ public class PathEntity {
         this.appHost = appHost;
     }
 
-    public Date getCreateTime() {
+    public Timestamp getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(Timestamp createTime) {
         this.createTime = createTime;
     }
 

@@ -19,6 +19,12 @@ public class ResponseServiceImpl implements ResponseService {
     private DataFromAppDao dataFromAppDao;
     @Override
     public boolean savePathRequest(DataFromAppEntity dataFromAppEntity) {
+        String result = dataFromAppEntity.getReportResult();
+        if (result != null || result.length() >= 50 ) {
+            //保留前50
+            result = result.substring(0,Math.min(50, result.length()));
+            dataFromAppEntity.setReportResult(result);
+        }
         dataFromAppDao.save(dataFromAppEntity);
         return true;
     }

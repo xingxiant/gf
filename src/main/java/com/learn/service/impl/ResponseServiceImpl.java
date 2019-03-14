@@ -20,7 +20,7 @@ public class ResponseServiceImpl implements ResponseService {
     @Override
     public boolean savePathRequest(DataFromAppEntity dataFromAppEntity) {
         String result = dataFromAppEntity.getReportResult();
-        if (result != null || result.length() >= 50 ) {
+        if (result != null && result.length() >= 50 ) {
             //保留前50
             result = result.substring(0,Math.min(50, result.length()));
             dataFromAppEntity.setReportResult(result);

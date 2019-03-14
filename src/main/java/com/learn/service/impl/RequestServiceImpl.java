@@ -18,7 +18,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public boolean savePathRequest(DataFromPathEntity dataFromPathEntity) {
         String result = dataFromPathEntity.getReportResult();
-        if (result != null || result.length() >= 50 ) {
+        if (result != null && result.length() >= 50 ) {
             //保留前50
             result = result.substring(0,Math.min(50, result.length()));
             dataFromPathEntity.setReportResult(result);

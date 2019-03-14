@@ -86,7 +86,7 @@
             <if test="callBackPath != null">`callback_path` = #{callBackPath},</if>
             <if test="callBackApp != null">`callback_app` = #{callBackApp},</if>
             <if test="createTime != null">`time` = #{createTime},</if>
-            <if test="appHost != null">`app_host` = #{appHost}</if>
+            <if test="appHost != null">`app_host` = #{appHost},</if>
             <if test="userIds != null">`user_ids` = #{userIds}</if>
         </set>
         where id = #{id}

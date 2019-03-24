@@ -19,10 +19,11 @@ public class PathDataServiceImpl implements PathDataService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private PathDataDao pathDataDao;
+
     @Override
     public List<PathDataEntity> queryPathData(Map<String, Object> map) {
         PathDataEntity pathDataEntity = new PathDataEntity();
-        pathDataEntity = pathDataDao.queryWithDate1(map);
+        pathDataEntity = (pathDataDao.queryWithDate1(map)).get(0);
         //查询pathData的基本信息
         //分成多个请求  先查fromPathCount  再查 fromAppCount 以此类推
         int fromPathCount = pathDataDao.queryFromPath(map);
@@ -52,8 +53,8 @@ public class PathDataServiceImpl implements PathDataService {
         map.put("companyKey",companyKey);
         map.put("appId",appId);
         map.put("endDate",endDate);
-        PathDataEntity temp = pathDataDao.queryWithDate(map);
-        if (temp==null){
+        List<PathDataEntity> temps = pathDataDao.queryWithDate(map);
+        if (temps==null || temps.size() == 0){
             //判断 有没有今天的数据 否则加不上 没有则创建再加
             PathDataEntity pathDataEntity = new PathDataEntity();
             pathDataEntity.setAppId(appId);
@@ -82,8 +83,9 @@ public class PathDataServiceImpl implements PathDataService {
         map.put("companyKey",companyKey);
         map.put("appId",appId);
         map.put("endDate",endDate);
-        PathDataEntity temp = pathDataDao.queryWithDate(map);
-        if (temp==null){
+        //防止并发出现多个PathDataEntity
+        List<PathDataEntity> temps = pathDataDao.queryWithDate(map);
+        if (temps == null || temps.size() == 0){
             //判断 有没有今天的数据 否则加不上 没有则创建再加
             PathDataEntity pathDataEntity = new PathDataEntity();
             pathDataEntity.setAppId(appId);

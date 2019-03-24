@@ -6,6 +6,7 @@ import com.learn.dao.FromAppDao;
 import com.learn.dao.FromPathDao;
 import com.learn.dao.ToPathDao;
 import com.learn.entity.*;
+import com.learn.factory.ThreadPoolFactory;
 import com.learn.service.*;
 import com.learn.utils.DateUtils;
 import com.learn.utils.PageUtils;
@@ -197,14 +198,14 @@ public class AppApiController extends AbstractController {
         if (identif == ""){
             return R.error(400,"params cac error");
         }
-        DataFromPathEntity data = requestService.getPathResuestByUID(identif);
+        final DataFromPathEntity data = requestService.getPathResuestByUID(identif);
         if (data == null){
             logger.info("appApi request error parms:"+params);
             return R.error(400,"params error");
         }
         DataFromAppEntity appEntity = transToApp(data);
         //校验pathInfo 通过，则获得pathInfo
-        PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
+        final PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
         if (pathEntity == null){
             logger.info("appApi request fail parms:"+params);
             return R.error(400,"params companyKey or appId error");
@@ -214,10 +215,23 @@ public class AppApiController extends AbstractController {
             //获取今天日期
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
             String now = df.format(new Date());
-            Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+            final Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
 
             //app回调数据加1
-            pathDataService.incrFromApp(data.getPathName(),data.getCompanyKey(),data.getAppName(),data.getAppId(),endDate);
+            try {
+                ThreadPoolFactory.executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            pathDataService.incrFromApp(data.getPathName(),data.getCompanyKey(),data.getAppName(),data.getAppId(),endDate);
+                        } catch (Exception e) {
+                            logger.error("incrFromApp error data:" + data.toString(), e);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("executorPool is full!", e);
+            }
             //生成1-100
             int p = new Random().nextInt(100)+1;
             int weight = pathEntity.getWeight();
@@ -229,18 +243,32 @@ public class AppApiController extends AbstractController {
                     appEntity.setReportResult(result);
                 }
                 //回传渠道记录加1
-                pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+                try {
+                    ThreadPoolFactory.executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+                            } catch (Exception e) {
+                                logger.error("incrToPath error data:"+ data.toString(), e);
+                            }
+                        }
+                    });
+                } catch (Exception e){
+                    logger.error("executorPool is full!", e);
+                }
+
             } else {
                 appEntity.setIsReportSuccess(1);
                 appEntity.setReportResult("deducted");
             }
+            responseService.savePathRequest(appEntity);
             return R.ok("success");
         } catch (Exception e){
             logger.error("appApi request fail!",e);
             appEntity.setIsReportSuccess(0);
-            return R.error(500,"appApi request fail!");
-        } finally {
             responseService.savePathRequest(appEntity);
+            return R.error(500,"appApi request fail!");
         }
 
     }

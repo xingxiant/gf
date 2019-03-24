@@ -2,14 +2,15 @@ package com.learn.dao;
 
 import com.learn.entity.PathDataEntity;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PathDataDao extends BaseDao<PathDataEntity> {
     public int saveReturn(PathDataEntity pathDataEntity);
 
-    public PathDataEntity queryWithDate(Map<String, Object> map);
+    public List<PathDataEntity> queryWithDate(Map<String, Object> map);
 
-    public PathDataEntity queryWithDate1(Map<String, Object> map);
+    public List<PathDataEntity> queryWithDate1(Map<String, Object> map);
 
     public  int queryFromPath(Map<String, Object> map);
 

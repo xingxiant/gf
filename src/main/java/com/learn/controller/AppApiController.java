@@ -195,7 +195,7 @@ public class AppApiController extends AbstractController {
 
         String identif = params.get("identif");
         logger.info("identif:"+identif);
-        if (identif == ""){
+        if (identif==null || identif == ""){
             return R.error(400,"params cac error");
         }
         final DataFromPathEntity data = requestService.getPathResuestByUID(identif);

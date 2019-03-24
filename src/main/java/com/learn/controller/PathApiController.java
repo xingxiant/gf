@@ -238,7 +238,7 @@ public class PathApiController extends AbstractController {
             try {
                 transformToDataFromPathEntity(dataFromPathEntity, idfa, companyKey, pathEntity.getName(), appId, pathEntity.getAppName(), callbackPath);
                 //保存请求记录
-                requestService.savePathRequest(dataFromPathEntity);
+//                requestService.savePathRequest(dataFromPathEntity);
             } catch (Exception e) {
                 logger.error("save dataFromPath error dataFromPathEntity:" + dataFromPathEntity.toString(), e);
             }

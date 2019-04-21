@@ -96,7 +96,7 @@ $(document).ready(function(){
             $(r).append(d8);
             $(d9).text(one.toPathTrueCount);
             $(r).append(d9);
-            $(d10).text((one.toPathTrueCount/one.fromPathCount).toFixed(2));
+            $(d10).text((one.toPathTrueCount/one.fromPathCount).toFixed(5));
             $(r).append(d10);
             $("#pathData").append(r);
 

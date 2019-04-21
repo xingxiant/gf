@@ -96,13 +96,31 @@ public class DataController extends AbstractController {
         //查询列表数据
         Query query = new Query(params);
 
-        List<DataFromPathEntity> dataList = dataFromPathService.queryList(query);
-        int total = dataFromPathService.queryTotal(query);
+        List<DataFromPathEntity> dataList = dataFromPathService.queryList(query, false);
+        int total = dataFromPathService.queryTotal(query, false);
 
         PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
 
         return R.ok().put("page", pageUtil);
     }
+    /**
+     * 大点击渠道请求列表列表
+     */
+    @RequestMapping("/dataFromBigPathList")
+    public R dataFromBigPathList(@RequestParam Map<String, Object> params,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
+        //查询列表数据
+        Query query = new Query(params);
+
+        List<DataFromPathEntity> dataList = dataFromPathService.queryList(query, true);
+        int total = dataFromPathService.queryTotal(query, true);
+
+        PageUtils pageUtil = new PageUtils(dataList, total, query.getLimit(), query.getPage());
+
+        return R.ok().put("page", pageUtil);
+    }
+
 
     /**
      * 广告请求列表列表
@@ -246,7 +264,17 @@ public class DataController extends AbstractController {
     @RequestMapping("/dataFromPathInfo/{id}")
     public R dataFromPathInfo(@PathVariable("id") Long id,HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
-        DataFromPathEntity data = dataFromPathService.queryObject(id);
+        DataFromPathEntity data = dataFromPathService.queryObject(id, false);
+
+        return R.ok().put("data", data);
+    }
+    /**
+     * 信息详情
+     */
+    @RequestMapping("/dataFromBigPathInfo/{id}")
+    public R dataFromBigPathInfo(@PathVariable("id") Long id,HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        DataFromPathEntity data = dataFromPathService.queryObject(id, true);
 
         return R.ok().put("data", data);
     }

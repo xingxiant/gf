@@ -15,19 +15,19 @@ public interface DataFromPathService {
     * 查询
 	* @return
 	*/
-	DataFromPathEntity queryObject(Long id);
+	DataFromPathEntity queryObject(Long id , boolean isBig);
 
     /**
     * 查询列表
     * @return
     */
-	List<DataFromPathEntity> queryList(Map<String, Object> map);
+	List<DataFromPathEntity> queryList(Map<String, Object> map, boolean isBig);
 
     /**
     * 查询总数
     * @return
     */
-	int queryTotal(Map<String, Object> map);
+	int queryTotal(Map<String, Object> map, boolean isBig);
 
     /**
     * 保存
@@ -46,6 +46,12 @@ public interface DataFromPathService {
     * @return
     */
 	void delete(Long id);
+
+	/**
+	 * 删除
+	 * @return
+	 */
+	void deleteBig(Long id);
 
     /**
     * 批量删除

@@ -201,7 +201,7 @@ public class PathApiController extends AbstractController {
             url=url.replace("{_idfa_}",idfa);
             url=url.replace("{_ip_}",ip);
             String paramName = pathEntity.getCallBackPath();
-            requestaAppPro(url,paramName,callbackFin);
+            requestaAppPro(url,paramName,callbackFin,true);
             return R.ok("success");
         } catch (Exception e){
             logger.error("pathApi request fail",e);
@@ -218,8 +218,8 @@ public class PathApiController extends AbstractController {
     public R req(@RequestParam Map<String, Object> params) {
 
         logger.info("pathApi req" + params);
-        String idfa = (String) params.get("idfa");
-        String ip = (String) params.get("ip");
+        final String idfa = (String) params.get("idfa");
+        final String ip = (String) params.get("ip");
         final String companyKey = (String) params.get("companyKey");
         final String appId = (String) params.get("appId");
         String callback = (String) params.get("callback");
@@ -253,6 +253,24 @@ public class PathApiController extends AbstractController {
                             Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
                             //增加渠道上报数据
                             pathDataService.incrFromPath(pathEntity.getName(), companyKey, pathEntity.getAppName(), appId, endDate);
+                            //设置app回调我们的接口
+                            //生成callback  我们自己的appApi/requesta加渠道的
+                            String mycallback = pathEntity.getCallBackApp();
+                            //不经过 urlCode编码 tomcat自动编码
+                            String callbackFin = mycallback + "&identif=" + dataFromPathEntity.getUniqueId();
+                            //logger.info("callbackFin:" + callbackFin);
+                            //请求App idfa mac ip callback
+                            String url = pathEntity.getAppHost();
+                            //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
+                            url = url.replace("{_idfa_}", idfa);
+                            url = url.replace("{_ip_}", ip);
+                            String paramName = pathEntity.getCallBackPath();
+                            String result = requestaAppPro(url, paramName, callbackFin, true);
+                            if (result != null){
+                                dataFromPathEntity.setReportResult(result);
+//                requestService.updatePathRequest(dataFromPathEntity);
+                            }
+                            requestService.savePathRequest(dataFromPathEntity);
                         } catch (Exception e) {
                             logger.error("incrFromPath error info:" + dataFromPathEntity.toString(), e);
                         }
@@ -260,26 +278,8 @@ public class PathApiController extends AbstractController {
                 });
             } catch (Exception e){
                 logger.error("executorPool is full!", e);
+                return R.error(501,"exexutor_abort");
             }
-
-            //设置app回调我们的接口
-            //生成callback  我们自己的appApi/requesta加渠道的
-            String mycallback = pathEntity.getCallBackApp();
-            //不经过 urlCode编码 tomcat自动编码
-            String callbackFin = mycallback + "&identif=" + dataFromPathEntity.getUniqueId();
-            //logger.info("callbackFin:" + callbackFin);
-            //请求App idfa mac ip callback
-            String url = pathEntity.getAppHost();
-            //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
-            url = url.replace("{_idfa_}", idfa);
-            url = url.replace("{_ip_}", ip);
-            String paramName = pathEntity.getCallBackPath();
-            String result = requestaAppPro(url, paramName, callbackFin);
-            if (result != null){
-                dataFromPathEntity.setReportResult(result);
-//                requestService.updatePathRequest(dataFromPathEntity);
-            }
-            requestService.savePathRequest(dataFromPathEntity);
             return R.ok("success");
         } catch (Exception e) {
             logger.error("pathApi request fail", e);
@@ -287,6 +287,85 @@ public class PathApiController extends AbstractController {
             dataFromPathEntity.setIsReportSuccess(0);
 //            requestService.updatePathRequest(dataFromPathEntity);
             requestService.savePathRequest(dataFromPathEntity);
+            return R.error(500, "pathApi request fail");
+        }
+    }
+
+    @RequestMapping(value = "/reqmore")
+    public R reqmore(@RequestParam Map<String, Object> params) {
+        final boolean isLog = System.currentTimeMillis()%10==0?true:false;
+        if (isLog) {
+            logger.info("pathApi req" + params);
+        }
+        final String idfa = (String) params.get("idfa");
+        final String ip = (String) params.get("ip");
+        final String companyKey = (String) params.get("companyKey");
+        final String appId = (String) params.get("appId");
+        String callback = (String) params.get("callback");
+        if (!checkParams(idfa, ip, companyKey, appId, callback)) {
+            return R.error(400, "params error");
+        }
+        //替换&
+        String callbackPath = ((String) params.get("callback")).replace("&amp;", "&");
+        final DataFromPathEntity dataFromPathEntity = new DataFromPathEntity();
+        try {
+            //校验pathInfo 通过，则获得pathInfo
+            final PathEntity pathEntity = pathService.check(companyKey, appId);
+            if (pathEntity == null) {
+                return R.error("companyKey or appId error");
+            }
+            try {
+                transformToDataFromPathEntity(dataFromPathEntity, idfa, companyKey, pathEntity.getName(), appId, pathEntity.getAppName(), callbackPath);
+                //保存请求记录
+//                requestService.savePathRequest(dataFromPathEntity);
+            } catch (Exception e) {
+                logger.error("save dataFromPath error dataFromPathEntity:" + dataFromPathEntity.toString(), e);
+            }
+            try {
+                ThreadPoolFactory.executorPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                    try {
+                        //获取今天的日期
+                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+                        String now = df.format(new Date());
+                        Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+                        //增加渠道上报数据
+                        pathDataService.incrFromPath(pathEntity.getName(), companyKey, pathEntity.getAppName(), appId, endDate);
+                        //设置app回调我们的接口
+                        //生成callback  我们自己的appApi/requesta加渠道的
+                        String mycallback = pathEntity.getCallBackApp();
+                        //不经过 urlCode编码 tomcat自动编码
+                        String callbackFin = mycallback + "&identif=" + dataFromPathEntity.getUniqueId();
+                        //logger.info("callbackFin:" + callbackFin);
+                        //请求App idfa mac ip callback
+                        String url = pathEntity.getAppHost();
+                        //对广告主地址进行模板替换 {_idfa_}:idfa {_ip_}:ip {_callback_}:callback
+                        url = url.replace("{_idfa_}", idfa);
+                        url = url.replace("{_ip_}", ip);
+                        String paramName = pathEntity.getCallBackPath();
+                        String result = requestaAppPro(url, paramName, callbackFin, isLog);
+                        if (result != null){
+                            dataFromPathEntity.setReportResult(result);
+//                requestService.updatePathRequest(dataFromPathEntity);
+                        }
+                        requestService.savePathBigRequest(dataFromPathEntity);
+                    } catch (Exception e) {
+                        logger.error("incrFromPath error info:" + dataFromPathEntity.toString(), e);
+                    }
+                    }
+                });
+            } catch (Exception e){
+                logger.error("executorPool is full!", e);
+                return R.error(501,"exexutor_abort");
+            }
+            return R.ok("success");
+        } catch (Exception e) {
+            logger.error("pathApi request fail", e);
+            //请求记录设置为失败
+            dataFromPathEntity.setIsReportSuccess(0);
+//            requestService.updatePathRequest(dataFromPathEntity);
+            requestService.savePathBigRequest(dataFromPathEntity);
             return R.error(500, "pathApi request fail");
         }
     }
@@ -346,7 +425,7 @@ public class PathApiController extends AbstractController {
             throw e;
         }
     }
-    private String requestaAppPro(String url,String paramName,String param) throws Exception{
+    private String requestaAppPro(String url,String paramName,String param,boolean isLog) throws Exception{
         logger.info("requestaAppPro url:"+url+" paramName:"+paramName+" param"+param);
         Connection connection =Jsoup.connect(url).ignoreContentType(true);
         connection.data(paramName,param);
@@ -358,8 +437,10 @@ public class PathApiController extends AbstractController {
                     .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
                     .timeout(5000).get();
             if (document!= null){
-                logger.info("document:"+document.text());
-                logger.info("pathApi request success!");
+                if (isLog) {
+                    logger.info("document:"+document.text());
+                    logger.info("pathApi request success!");
+                }
                 return document.text();
             } else {
                 return null;

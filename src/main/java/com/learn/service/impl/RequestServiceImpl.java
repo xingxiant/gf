@@ -1,5 +1,6 @@
 package com.learn.service.impl;
 
+import com.learn.dao.DataFromPathBigDao;
 import com.learn.dao.DataFromPathDao;
 import com.learn.dao.PathDataDao;
 import com.learn.entity.DataFromPathEntity;
@@ -15,6 +16,8 @@ public class RequestServiceImpl implements RequestService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private DataFromPathDao dataFromPathDao;
+    @Autowired
+    private DataFromPathBigDao dataFromPathBigDao;
     @Override
     public boolean savePathRequest(DataFromPathEntity dataFromPathEntity) {
         String result = dataFromPathEntity.getReportResult();
@@ -24,6 +27,18 @@ public class RequestServiceImpl implements RequestService {
             dataFromPathEntity.setReportResult(result);
         }
         dataFromPathDao.save(dataFromPathEntity);
+        return true;
+    }
+
+    @Override
+    public boolean savePathBigRequest(DataFromPathEntity dataFromPathEntity) {
+        String result = dataFromPathEntity.getReportResult();
+        if (result != null && result.length() >= 50 ) {
+            //保留前50
+            result = result.substring(0,Math.min(50, result.length()));
+            dataFromPathEntity.setReportResult(result);
+        }
+        dataFromPathBigDao.save(dataFromPathEntity);
         return true;
     }
 
@@ -42,5 +57,10 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public DataFromPathEntity getPathResuestByUID(String uid) {
         return dataFromPathDao.getDataFromPathByUID(uid);
+    }
+
+    @Override
+    public DataFromPathEntity getPathBigResuestByUID(String uid) {
+        return dataFromPathBigDao.getDataFromPathByUID(uid);
     }
 }

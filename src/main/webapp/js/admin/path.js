@@ -57,6 +57,12 @@ $(function () {
                 width: 50,
             },
             {
+                label: '通过率',
+                name: 'weight',
+                index: 'weight',
+                width: 50,
+            },
+            {
                 label: '创建时间',
                 name: 'createTime',
                 index: 'time',

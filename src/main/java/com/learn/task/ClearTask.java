@@ -26,6 +26,7 @@ public class ClearTask {
         try {
             Long now = System.currentTimeMillis()/1000;
             dataFromPathService.delete(now-3*24*60*60);
+            dataFromPathService.deleteBig(now-2*24*3600);
             dataFromAppService.delete(now-3*24*60*60);
             logger.info("clearTask execute success!");
         } catch (Exception e) {

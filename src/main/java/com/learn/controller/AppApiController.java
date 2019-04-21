@@ -192,7 +192,6 @@ public class AppApiController extends AbstractController {
     public R req(@RequestParam Map<String, String> params,HttpServletResponse response) {
 
         logger.info("appApi req"+params);
-
         String identif = params.get("identif");
         logger.info("identif:"+identif);
         if (identif==null || identif == ""){
@@ -203,7 +202,7 @@ public class AppApiController extends AbstractController {
             logger.info("appApi request error parms:"+params);
             return R.error(400,"params error");
         }
-        DataFromAppEntity appEntity = transToApp(data);
+        final DataFromAppEntity appEntity = transToApp(data);
         //校验pathInfo 通过，则获得pathInfo
         final PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
         if (pathEntity == null){
@@ -237,18 +236,19 @@ public class AppApiController extends AbstractController {
             int weight = pathEntity.getWeight();
             logger.info("appApi p:"+p+" weight:"+weight);
             if (p<=weight){
-                String result =pathRequest(data.getCallback());
-                appEntity.setIsReportSuccess(1);
-                if (result!=null){
-                    appEntity.setReportResult(result);
-                }
-                //回传渠道记录加1
                 try {
                     ThreadPoolFactory.executorService.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
+                                String result =pathRequest(data.getCallback());
+                                appEntity.setIsReportSuccess(1);
+                                if (result!=null){
+                                    appEntity.setReportResult(result);
+                                }
+                                //回传渠道记录加1
                                 pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+                                responseService.savePathRequest(appEntity);
                             } catch (Exception e) {
                                 logger.error("incrToPath error data:"+ data.toString(), e);
                             }
@@ -261,14 +261,104 @@ public class AppApiController extends AbstractController {
             } else {
                 appEntity.setIsReportSuccess(1);
                 appEntity.setReportResult("deducted");
+                responseService.savePathRequest(appEntity);
             }
-            responseService.savePathRequest(appEntity);
             return R.ok("success");
         } catch (Exception e){
             logger.error("appApi request fail!",e);
             appEntity.setIsReportSuccess(0);
             responseService.savePathRequest(appEntity);
-            return R.error(500,"appApi request fail!");
+            return R.error(500,"appApi_request_fail!");
+        }
+
+    }
+
+    /**
+     * 大地点击请求
+     */
+    @RequestMapping("/reqmore")
+    public R reqmore(@RequestParam Map<String, String> params,HttpServletResponse response) {
+
+        logger.info("appApi reqmore"+params);
+
+        String identif = params.get("identif");
+        logger.info("identif:"+identif);
+        if (identif==null || identif == ""){
+            return R.error(400,"params cac error");
+        }
+        final DataFromPathEntity data = requestService.getPathBigResuestByUID(identif);
+        if (data == null){
+            logger.info("appApi request error parms:"+params);
+            return R.error(400,"params error");
+        }
+        final DataFromAppEntity appEntity = transToApp(data);
+        //校验pathInfo 通过，则获得pathInfo
+        final PathEntity pathEntity = pathService.check(data.getCompanyKey(),data.getAppId());
+        if (pathEntity == null){
+            logger.info("appApi request fail parms:"+params);
+            return R.error(400,"params companyKey or appId error");
+        }
+
+        try {
+            //获取今天日期
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");//设置日期格式
+            String now = df.format(new Date());
+            final Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
+
+            //app回调数据加1
+            try {
+                ThreadPoolFactory.executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            pathDataService.incrFromApp(data.getPathName(),data.getCompanyKey(),data.getAppName(),data.getAppId(),endDate);
+                        } catch (Exception e) {
+                            logger.error("incrFromApp error data:" + data.toString(), e);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("executorPool is full!", e);
+            }
+            //生成1-100
+            int p = new Random().nextInt(100)+1;
+            int weight = pathEntity.getWeight();
+            logger.info("appApi p:"+p+" weight:"+weight);
+            if (p<=weight){
+
+                try {
+                    ThreadPoolFactory.executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                String result =pathRequest(data.getCallback());
+                                appEntity.setIsReportSuccess(1);
+                                if (result!=null){
+                                    appEntity.setReportResult(result);
+                                }
+                                //回传渠道记录加1
+                                pathDataService.incrToPath(pathEntity.getName(),pathEntity.getCompanyKey(),pathEntity.getAppName(),pathEntity.getAppId(),endDate);
+                                responseService.savePathRequest(appEntity);
+                            } catch (Exception e) {
+                                logger.error("incrToPath error data:"+ data.toString(), e);
+                            }
+                        }
+                    });
+                } catch (Exception e){
+                    logger.error("executorPool is full!", e);
+                }
+
+            } else {
+                appEntity.setIsReportSuccess(1);
+                appEntity.setReportResult("deducted");
+                responseService.savePathRequest(appEntity);
+            }
+            return R.ok("success");
+        } catch (Exception e){
+            logger.error("appApi request fail!",e);
+            appEntity.setIsReportSuccess(0);
+            responseService.savePathRequest(appEntity);
+            return R.error(500,"appApi_request_fail!");
         }
 
     }
@@ -308,10 +398,10 @@ public class AppApiController extends AbstractController {
                     .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
                     .header("Content-Type", "application/json;charset=UTF-8")
                     .header("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64; rv:48.0) Gecko/20100101 Firefox/48.0")
-                    .timeout(5000).get();
+                    .timeout(10000).get();
             if (document!= null){
-                logger.info("pathApi request document:"+document.text());
-                logger.info("pathApi request success!");
+                logger.info("appApi request document:"+document.text());
+                logger.info("appApi request success!");
                 return document.text();
             }else {
                 return null;

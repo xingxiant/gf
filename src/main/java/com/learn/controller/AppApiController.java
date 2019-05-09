@@ -217,27 +217,27 @@ public class AppApiController extends AbstractController {
             final Date endDate = (new SimpleDateFormat("yyyy-MM-dd")).parse(now);
 
             //app回调数据加1
-            try {
-                ThreadPoolFactory.executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
+//            try {
+//                ThreadPoolFactory.executorService.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
                             pathDataService.incrFromApp(data.getPathName(),data.getCompanyKey(),data.getAppName(),data.getAppId(),endDate);
-                        } catch (Exception e) {
-                            logger.error("incrFromApp error data:" + data.toString(), e);
-                        }
-                    }
-                });
-            } catch (Exception e) {
-                logger.error("executorPool is full!", e);
-            }
+//                        } catch (Exception e) {
+//                            logger.error("incrFromApp error data:" + data.toString(), e);
+//                        }
+//                    }
+//                });
+//            } catch (Exception e) {
+//                logger.error("executorPool is full!", e);
+//            }
             //生成1-100
             int p = new Random().nextInt(100)+1;
             int weight = pathEntity.getWeight();
             logger.info("appApi p:"+p+" weight:"+weight);
             if (p<=weight){
                 try {
-                    ThreadPoolFactory.executorService.execute(new Runnable() {
+                    ThreadPoolFactory.appExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -307,7 +307,7 @@ public class AppApiController extends AbstractController {
 
             //app回调数据加1
             try {
-                ThreadPoolFactory.executorService.execute(new Runnable() {
+                ThreadPoolFactory.appExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -327,7 +327,7 @@ public class AppApiController extends AbstractController {
             if (p<=weight){
 
                 try {
-                    ThreadPoolFactory.executorService.execute(new Runnable() {
+                    ThreadPoolFactory.appExecutor.execute(new Runnable() {
                         @Override
                         public void run() {
                             try {

@@ -7,11 +7,25 @@ import java.util.concurrent.TimeUnit;
 
 public class ThreadPoolFactory {
     public static ExecutorService executorService = new ThreadPoolExecutor(
-            20,
+            30,
             50,
             10,
             TimeUnit.SECONDS,
-            new ArrayBlockingQueue(200)
+            new ArrayBlockingQueue(500)
+    );
+    public static ExecutorService appExecutor = new ThreadPoolExecutor(
+            30,
+            50,
+            10,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue(500)
+    );
+    public static ExecutorService httpExecutor = new ThreadPoolExecutor(
+            30,
+            50,
+            10,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue(500)
     );
     public static ExecutorService executorPool = new ThreadPoolExecutor(
             20,

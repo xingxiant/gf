@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.UserPathDao">
+
+    <!-- 可根据自己的需求，是否要使用
+    -->
+    <resultMap type="com.learn.entity.UserPathEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="companyKey" column="companykey"/>
+        <result property="appName" column="app_name"/>
+        <result property="pathName" column="path_name"/>
+        <result property="userId" column="user_id"/>
+
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.UserPathEntity">
+		select * from user_path where id = #{value}
+	</select>
+
+    <select id="tj" resultType="double">
+		select avg(fs) from user_path
+    </select>
+    <select id="queryList" resultType="com.learn.entity.UserPathEntity">
+        select * from user_path where 1=1
+        <if test="userId != null and userId != ''">
+            and user_id like '%${userId}%'
+        </if>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+
+    </select>
+    <select id="getAllByUserId" resultType="com.learn.entity.UserPathEntity">
+        select * from  user_path where user_id = #{value}
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from user_path where 1=1
+        <if test="idfa != null and idfa != ''">
+            and idfa like '%${idfa}%'
+        </if>
+
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.UserPathEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into user_path
+		(
+			`app_id`,
+			`companykey`,`app_name`,`path_name`,`user_id`
+		)
+		values
+		(
+			#{appId},
+			#{companyKey},#{appName},#{pathName},#{userId}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.learn.entity.UserPathEntity">
+        update user_path
+        <set>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="companyKey != null">`companykey` = #{companyKey},</if>
+            <if test="appName != null">`app_name` = #{appName},</if>
+            <if test="pathName != null">`path_name` = #{pathName},</if>
+            <if test="userId != null">`user_id` = #{userId}</if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+    <delete id="delete">
+		delete from user_path where id = #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from user_path where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

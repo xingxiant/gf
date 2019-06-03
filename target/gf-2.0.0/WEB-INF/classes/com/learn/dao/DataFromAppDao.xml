@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learn.dao.DataFromAppDao">
+
+    <!-- 可根据自己的需求，是否要使用
+    -->
+    <resultMap type="com.learn.entity.DataFromAppEntity" id="dataMap">
+        <result property="id" column="id"/>
+        <result property="appId" column="app_id"/>
+        <result property="companyKey" column="companykey"/>
+        <result property="appName" column="app_name"/>
+        <result property="pathName" column="path_name"/>
+        <result property="time" column="time"/>
+        <result property="idfa" column="idfa"/>
+        <result property="isReportSuccess" column="is_report_success"/>
+        <result property="reportResult" column="report_result"/>
+
+    </resultMap>
+
+    <select id="queryObject" resultType="com.learn.entity.DataFromAppEntity">
+		select * from data_from_app where id = #{value}
+	</select>
+
+    <select id="tj" resultType="double">
+		select avg(fs) from data_from_app
+    </select>
+    <select id="queryList" resultType="com.learn.entity.DataFromAppEntity">
+        select * from data_from_app where 1=1
+        <if test="idfa != null and idfa != ''">
+            and idfa like '%${idfa}%'
+        </if>
+
+
+        <choose>
+            <when test="sidx != null and sidx.trim() != ''">
+                order by ${sidx} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+
+    </select>
+    <select id="getDataFromPathByUID" resultType="com.learn.entity.DataFromAppEntity">
+        select * from  data_from_app where unique_id like '%${uid}%'
+    </select>
+
+    <select id="queryTotal" resultType="int">
+        select count(*) from data_from_app where 1=1
+        <if test="idfa != null and idfa != ''">
+            and idfa like '%${idfa}%'
+        </if>
+
+    </select>
+
+    <insert id="save" parameterType="com.learn.entity.DataFromAppEntity" useGeneratedKeys="true" keyProperty="id">
+		insert into data_from_app
+		(
+			`app_id`,
+			`companykey`,`app_name`,`path_name`,`time`,`idfa`,`is_report_success`,`report_result`
+		)
+		values
+		(
+			#{appId},
+			#{companyKey},#{appName},#{pathName},#{time},#{idfa},#{isReportSuccess},#{reportResult}
+		)
+	</insert>
+
+    <update id="update" parameterType="com.learn.entity.DataFromAppEntity">
+        update data_from_app
+        <set>
+            <if test="appId != null">`app_id` = #{appId},</if>
+            <if test="companyKey != null">`companykey` = #{companyKey},</if>
+            <if test="appName != null">`app_name` = #{appName},</if>
+            <if test="pathName != null">`path_name` = #{pathName},</if>
+            <if test="time != null">`time` = #{time},</if>
+            <if test="idfa != null">`idfa` = #{idfa},</if>
+            <if test="isReportSuccess != null">`is_report_success` = #{isReportSuccess},</if>
+            <if test="reportResult != null">`report_result` = #{reportResult}</if>
+        </set>
+        where unique_id = #{uniqueId}
+    </update>
+
+
+    <delete id="delete">
+		delete from data_from_app where time &lt;= #{value}
+	</delete>
+
+    <delete id="deleteBatch">
+        delete from data_from_app where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

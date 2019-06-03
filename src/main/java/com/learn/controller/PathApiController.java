@@ -1,5 +1,6 @@
 package com.learn.controller;
 
+import com.alibaba.druid.util.StringUtils;
 import com.baidu.aip.nlp.AipNlp;
 import com.learn.dao.DataDao;
 import com.learn.dao.FromPathDao;
@@ -430,6 +431,7 @@ public class PathApiController extends AbstractController {
         Connection connection =Jsoup.connect(url).ignoreContentType(true);
         connection.data(paramName,param);
         try {
+            String ss = "";
             Document document = connection.header("Accept", "*/*")
                     .header("Accept-Encoding", "gzip, deflate")
                     .header("Accept-Language","zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3")
@@ -438,10 +440,16 @@ public class PathApiController extends AbstractController {
                     .timeout(5000).get();
             if (document!= null){
                 if (isLog) {
-                    logger.info("document:"+document.text());
+                    String documentStr = document.text();
+                    if (documentStr == null || documentStr.length() == 0){
+                        ss ="";
+                    } else {
+                        ss = documentStr.substring(0,Math.min(20,documentStr.length()));
+                    }
+                    logger.info("document:"+ss);
                     logger.info("pathApi request success!");
                 }
-                return document.text();
+                return ss;
             } else {
                 return null;
             }
